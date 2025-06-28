@@ -54,7 +54,7 @@
         </div>
       </div>
       <div class="bottom-icons">
-        <a href="https://github.com/gedoor/legado_web_bookshelf" target="_blank">
+        <a href="https://github.com/318182456/legado-reader3-vscode" target="_blank">
           <div class="bottom-icon">
             <img :src="githubUrl" alt="" />
           </div>
