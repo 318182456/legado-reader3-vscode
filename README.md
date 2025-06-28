@@ -1,16 +1,16 @@
 # 阅读VS Code插件
 
-[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/sunrishe.legado-reader3-vscode?label=version)](https://marketplace.visualstudio.com/items?itemName=sunrishe.legado-reader3-vscode)
-[![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/sunrishe.legado-reader3-vscode?label=downloads)](https://marketplace.visualstudio.com/items?itemName=sunrishe.legado-reader3-vscode)
-[![stars](https://img.shields.io/github/stars/sunrishe/legado-reader3-vscode)](https://github.com/sunrishe/legado-reader3-vscode.git)
-[![issues](https://img.shields.io/github/issues/sunrishe/legado-reader3-vscode)](https://github.com/sunrishe/legado-reader3-vscode.git)
-[![GitHub License](https://img.shields.io/github/license/sunrishe/legado-reader3-vscode)](https://github.com/sunrishe/legado-reader3-vscode.git)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/318182456.legado-reader3-vscode?label=version)](https://marketplace.visualstudio.com/items?itemName=318182456.legado-reader3-vscode)
+[![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/318182456.legado-reader3-vscode?label=downloads)](https://marketplace.visualstudio.com/items?itemName=318182456.legado-reader3-vscode)
+[![stars](https://img.shields.io/github/stars/318182456/legado-reader3-vscode)](https://github.com/318182456/legado-reader3-vscode.git)
+[![issues](https://img.shields.io/github/issues/318182456/legado-reader3-vscode)](https://github.com/318182456/legado-reader3-vscode.git)
+[![GitHub License](https://img.shields.io/github/license/318182456/legado-reader3-vscode)](https://github.com/318182456/legado-reader3-vscode.git)
 
-📕 [GitHub仓库](https://github.com/sunrishe/legado-reader3-vscode.git)
-📗 [VS Code插件市场](https://marketplace.visualstudio.com/items?itemName=sunrishe.legado-reader3-vscode)
-📘 [更新日志](https://github.com/sunrishe/legado-reader3-vscode/blob/master/CHANGELOG.md)
+📕 [GitHub仓库](https://github.com/318182456/legado-reader3-vscode.git)
+📗 [VS Code插件市场](https://marketplace.visualstudio.com/items?itemName=318182456.legado-reader3-vscode)
+📘 [更新日志](https://github.com/318182456/legado-reader3-vscode/blob/master/CHANGELOG.md)
 
-📙 插件不断完善，欢迎提交 [Issues](https://github.com/sunrishe/legado-reader3-vscode/issues)、[Pull requests](https://github.com/sunrishe/legado-reader3-vscode/pulls)
+📙 插件不断完善，欢迎提交 [Issues](https://github.com/318182456/legado-reader3-vscode/issues)、[Pull requests](https://github.com/318182456/legado-reader3-vscode/pulls)
 
 ---
 
