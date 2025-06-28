@@ -54,10 +54,7 @@
         </div>
       </div>
       <div class="bottom-icons">
-        <a
-          href="https://github.com/gedoor/legado_web_bookshelf"
-          target="_blank"
-        >
+        <a href="https://github.com/gedoor/legado_web_bookshelf" target="_blank">
           <div class="bottom-icon">
             <img :src="githubUrl" alt="" />
           </div>
@@ -65,11 +62,7 @@
       </div>
     </div>
     <div class="shelf-wrapper" ref="shelfWrapper">
-      <book-items
-        :books="books"
-        @bookClick="handleBookClick"
-        :isSearch="isSearching"
-      ></book-items>
+      <book-items :books="books" @bookClick="handleBookClick" :isSearch="isSearching"></book-items>
     </div>
   </div>
 </template>
@@ -96,13 +89,10 @@ const readingRecent = ref({
   author: "",
   url: "",
   chapterIndex: 0,
-  chapterPos: 0,
+  chapterPos: 0
 });
 const shelfWrapper = ref(null);
-const { showLoading, closeLoading, loadingWrapper } = useLoading(
-  shelfWrapper,
-  "正在获取书籍信息"
-);
+const { showLoading, closeLoading, loadingWrapper } = useLoading(shelfWrapper, "正在获取书籍信息");
 
 const books = ref([]);
 
@@ -117,9 +107,7 @@ watchEffect(() => {
     return;
   }
   books.value = shelf.value.filter((book) => {
-    return (
-      book.name.includes(search.value) || book.author.includes(search.value)
-    );
+    return book.name.includes(search.value) || book.author.includes(search.value);
   });
 });
 
@@ -153,23 +141,31 @@ const setIP = () => {
   ElMessageBox.prompt("请输入阅读WEB服务地址", "设置", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
-    inputValue: WEB.getLegadoWebServeUrl(),
+    inputValue: WEB.getBaseLegadoWebServeUrl(),
     inputValidator: (input) => {
       let reg = /^https?:\/\/((?:\d{1,3}\.){3}(?:\d{1,3})):(\d{1,5})$/;
-      if (!reg.test(input)) {
-        return false;
-      }
-      let res = reg.exec(input);
-      let ips = res[1].split(".");
-      for (let i = 0; i < ips.length; i++) {
-        let ip = parseInt(ips[i]);
-        if (ip > 255) {
+      if (input && input.endsWith("/reader3")) {
+        reg = /^https:\/\/\w+@[\w\d]+:[\w\d]+(\.[\w\d]+)*:\d+\/\w+$/;
+        if (!reg.test(input)) {
           return false;
         }
-      }
-      let port = parseInt(res[2]);
-      if (port > 65535) {
-        return false;
+        WEB.setIsReader3(true);
+      } else {
+        if (!reg.test(input)) {
+          return false;
+        }
+        let res = reg.exec(input);
+        let ips = res[1].split(".");
+        for (let i = 0; i < ips.length; i++) {
+          let ip = parseInt(ips[i]);
+          if (ip > 255) {
+            return false;
+          }
+        }
+        let port = parseInt(res[2]);
+        if (port > 65535) {
+          return false;
+        }
       }
       return true;
     },
@@ -215,13 +211,7 @@ const setIP = () => {
 
 const router = useRouter();
 const handleBookClick = async (book) => {
-  const {
-    bookUrl,
-    name,
-    author,
-    durChapterIndex = 0,
-    durChapterPos = 0,
-  } = book;
+  const { bookUrl, name, author, durChapterIndex = 0, durChapterPos = 0 } = book;
   await API.saveBook(book);
   toDetail(bookUrl, name, author, durChapterIndex, durChapterPos);
 };
@@ -237,11 +227,11 @@ const toDetail = (bookUrl, bookName, bookAuthor, chapterIndex, chapterPos) => {
     author: bookAuthor,
     url: bookUrl,
     chapterIndex: chapterIndex,
-    chapterPos: chapterPos,
+    chapterPos: chapterPos
   };
   localStorage.setItem("readingRecent", JSON.stringify(readingRecent.value));
   router.push({
-    path: "/chapter",
+    path: "/chapter"
   });
 };
 

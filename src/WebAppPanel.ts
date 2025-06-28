@@ -35,9 +35,9 @@ export class WebAppPanel {
   }
 
   public static createOrShow(extensionUri: vscode.Uri) {
-    const column = (vscode.window.activeTextEditor
-      ? vscode.window.activeTextEditor.viewColumn
-      : undefined) || vscode.ViewColumn.One;
+    const column =
+      (vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined) ||
+      vscode.ViewColumn.One;
 
     // If we already have a panel, show it.
     if (WebAppPanel.currentPanel) {

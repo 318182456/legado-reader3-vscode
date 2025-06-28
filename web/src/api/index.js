@@ -12,7 +12,7 @@ const APIExceptionHandler = (error) => {
   if (isSourecEditor) {
     ElMessage({
       message: "后端错误，检查网络或者阅读app",
-      type: "error",
+      type: "error"
     });
   }
   throw error;
@@ -20,11 +20,33 @@ const APIExceptionHandler = (error) => {
 ajax.interceptors.response.use((response) => response, APIExceptionHandler);
 
 // Http
-const getReadConfig = () => ajax.get("/getReadConfig");
+const getReadConfig = () => {
+  if (WEB.isReader3()) {
+    return Promise.resolve({
+      data: {
+        data: {
+          theme: 7,
+          font: 0,
+          fontSize: 18,
+          fontColor: "#f6f6f4",
+          readWidth: 800,
+          infiniteLoading: true,
+          customFontName: "",
+          spacing: {
+            paragraph: 1,
+            line: 0.8,
+            letter: 0
+          }
+        }
+      }
+    });
+  } else {
+    return ajax.get("/getReadConfig");
+  }
+};
 const saveReadConfig = (config) => ajax.post("/saveReadConfig", config);
 
-const saveBookProgress = (bookProgress) =>
-  ajax.post("/saveBookProgress", bookProgress);
+const saveBookProgress = (bookProgress) => ajax.post("/saveBookProgress", bookProgress);
 
 const saveBookProgressWithBeacon = (bookProgress) => {
   if (!bookProgress) return;
@@ -40,16 +62,8 @@ const getBookShelf = () => ajax.get("/getBookshelf");
 const getChapterList = (/** @type {string} */ bookUrl) =>
   ajax.get("/getChapterList?url=" + encodeURIComponent(bookUrl));
 
-const getBookContent = (
-  /** @type {string} */ bookUrl,
-  /** @type {number} */ chapterIndex
-) =>
-  ajax.get(
-    "/getBookContent?url=" +
-      encodeURIComponent(bookUrl) +
-      "&index=" +
-      chapterIndex
-  );
+const getBookContent = (/** @type {string} */ bookUrl, /** @type {number} */ chapterIndex) =>
+  ajax.get("/getBookContent?url=" + encodeURIComponent(bookUrl) + "&index=" + chapterIndex);
 
 const search = (
   /** @type {string} */ searchKey,
@@ -76,23 +90,16 @@ const deleteBook = (book) => ajax.post("/deleteBook", book);
 const isBookSource = /bookSource/i.test(location.href);
 
 // Http
-const getSources = () =>
-  isBookSource ? ajax.get("getBookSources") : ajax.get("getRssSources");
+const getSources = () => (isBookSource ? ajax.get("getBookSources") : ajax.get("getRssSources"));
 
 const saveSource = (data) =>
-  isBookSource
-    ? ajax.post("saveBookSource", data)
-    : ajax.post("saveRssSource", data);
+  isBookSource ? ajax.post("saveBookSource", data) : ajax.post("saveRssSource", data);
 
 const saveSources = (data) =>
-  isBookSource
-    ? ajax.post("saveBookSources", data)
-    : ajax.post("saveRssSources", data);
+  isBookSource ? ajax.post("saveBookSources", data) : ajax.post("saveRssSources", data);
 
 const deleteSource = (data) =>
-  isBookSource
-    ? ajax.post("deleteBookSources", data)
-    : ajax.post("deleteRssSources", data);
+  isBookSource ? ajax.post("deleteBookSources", data) : ajax.post("deleteRssSources", data);
 
 const debug = (
   /** @type {string} */ sourceUrl,
@@ -115,7 +122,7 @@ const debug = (
   socket.onclose = () => {
     ElMessage({
       message: "调试已关闭！",
-      type: "info",
+      type: "info"
     });
     onFinish();
   };
@@ -137,5 +144,5 @@ export default {
   saveSources,
   saveSource,
   deleteSource,
-  debug,
+  debug
 };

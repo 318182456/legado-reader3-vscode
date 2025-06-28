@@ -1,9 +1,5 @@
 <template>
-  <div
-    class="settings-wrapper"
-    :style="popupTheme"
-    :class="{ night: isNight, day: !isNight }"
-  >
+  <div class="settings-wrapper" :style="popupTheme" :class="{ night: isNight, day: !isNight }">
     <div class="settings-title">设置</div>
     <div class="setting-list">
       <ul>
@@ -17,9 +13,11 @@
             ref="themes"
             @click="setTheme(index)"
             :class="{ selected: selectedTheme == index }"
-            ><em v-if="index < 6" class="iconfont">&#58980;</em
-            ><em v-else class="moon-icon">{{ moonIcon }}</em></span
           >
+            <em v-if="index < 6" class="iconfont">&#58980;</em>
+            <em v-else-if="selectedTheme != index" class="moon-icon">""</em>
+            <em v-else class="iconfont">""</em>
+          </span>
         </li>
         <li class="font-list">
           <i>字体颜色</i>
@@ -60,15 +58,10 @@
             trigger="click"
             v-model:visible="customFontSavePopVisible"
           >
-            <p>
-              请确认输入的字体名称完整无误，并且该字体已经安装在您的设备上。
-            </p>
+            <p>请确认输入的字体名称完整无误，并且该字体已经安装在您的设备上。</p>
             <p>确定保存吗？</p>
             <div style="text-align: right; margin: 0">
-              <el-button
-                size="small"
-                plain
-                @click="customFontSavePopVisible = false"
+              <el-button size="small" plain @click="customFontSavePopVisible = false"
                 >取消</el-button
               >
               <el-button
@@ -89,37 +82,28 @@
         <li class="font-size">
           <i>字体大小</i>
           <div class="resize">
-            <span class="less" @click="lessFontSize"
-              ><em class="iconfont">&#58966;</em></span
+            <span class="less" @click="lessFontSize"><em class="iconfont">&#58966;</em></span
             ><b></b> <span class="lang">{{ fontSize }}</span
             ><b></b>
-            <span class="more" @click="moreFontSize"
-              ><em class="iconfont">&#58976;</em></span
-            >
+            <span class="more" @click="moreFontSize"><em class="iconfont">&#58976;</em></span>
           </div>
         </li>
         <li class="letter-spacing">
           <i>字距</i>
           <div class="resize">
-            <span class="less" @click="lessLetterSpacing"
-              ><em class="iconfont">&#58966;</em></span
+            <span class="less" @click="lessLetterSpacing"><em class="iconfont">&#58966;</em></span
             ><b></b> <span class="lang">{{ spacing.letter.toFixed(2) }}</span
             ><b></b>
-            <span class="more" @click="moreLetterSpacing"
-              ><em class="iconfont">&#58976;</em></span
-            >
+            <span class="more" @click="moreLetterSpacing"><em class="iconfont">&#58976;</em></span>
           </div>
         </li>
         <li class="line-spacing">
           <i>行距</i>
           <div class="resize">
-            <span class="less" @click="lessLineSpacing"
-              ><em class="iconfont">&#58966;</em></span
+            <span class="less" @click="lessLineSpacing"><em class="iconfont">&#58966;</em></span
             ><b></b> <span class="lang">{{ spacing.line.toFixed(1) }}</span
             ><b></b>
-            <span class="more" @click="moreLineSpacing"
-              ><em class="iconfont">&#58976;</em></span
-            >
+            <span class="more" @click="moreLineSpacing"><em class="iconfont">&#58976;</em></span>
           </div>
         </li>
         <li class="paragraph-spacing">
@@ -128,8 +112,7 @@
             <div class="resize">
               <span class="less" @click="lessParagraphSpacing"
                 ><em class="iconfont">&#58966;</em></span
-              ><b></b>
-              <span class="lang">{{ spacing.paragraph.toFixed(1) }}</span
+              ><b></b> <span class="lang">{{ spacing.paragraph.toFixed(1) }}</span
               ><b></b>
               <span class="more" @click="moreParagraphSpacing"
                 ><em class="iconfont">&#58976;</em></span
@@ -140,13 +123,10 @@
         <li class="read-width" v-if="!store.miniInterface">
           <i>页面宽度</i>
           <div class="resize">
-            <span class="less" @click="lessReadWidth"
-              ><em class="iconfont">&#58965;</em></span
+            <span class="less" @click="lessReadWidth"><em class="iconfont">&#58965;</em></span
             ><b></b> <span class="lang">{{ readWidth }}</span
             ><b></b>
-            <span class="more" @click="moreReadWidth"
-              ><em class="iconfont">&#58975;</em></span
-            >
+            <span class="more" @click="moreReadWidth"><em class="iconfont">&#58975;</em></span>
           </div>
         </li>
         <li class="infinite-loading">
@@ -184,30 +164,33 @@ const isNight = ref(store.config.theme == 6);
 const moonIcon = ref("");
 const themeColors = shallowRef([
   {
-    background: "rgba(250, 245, 235, 0.8)",
+    background: "rgba(250, 245, 235, 0.8)"
   },
   {
-    background: "rgba(245, 234, 204, 0.8)",
+    background: "rgba(245, 234, 204, 0.8)"
   },
   {
-    background: "rgba(230, 242, 230, 0.8)",
+    background: "rgba(230, 242, 230, 0.8)"
   },
   {
-    background: "rgba(228, 241, 245, 0.8)",
+    background: "rgba(228, 241, 245, 0.8)"
   },
   {
-    background: "rgba(245, 228, 228, 0.8)",
+    background: "rgba(245, 228, 228, 0.8)"
   },
   {
-    background: "rgba(224, 224, 224, 0.8)",
+    background: "rgba(224, 224, 224, 0.8)"
   },
   {
-    background: "rgba(0, 0, 0, 0.5)",
+    background: "rgba(0, 0, 0, 0.5)"
   },
+  {
+    background: "rgb(40, 42, 54)"
+  }
 ]);
 const moonIconStyle = ref({
   display: "inline",
-  color: "rgba(255,255,255,0.2)",
+  color: "rgba(255,255,255,0.2)"
 });
 const fonts = ref(["雅黑", "宋体", "楷书"]);
 const customFontName = ref(store.config.customFontName);
@@ -230,6 +213,7 @@ const config = computed(() => {
 const popupTheme = computed(() => {
   return {
     background: settings.themes[config.value.theme].popup,
+    color: config.value.fontColor
   };
 });
 const selectedTheme = computed(() => {
@@ -245,6 +229,11 @@ const setTheme = (theme) => {
     moonIcon.value = "";
     fontColor.value = config.value.fontColor = "#666";
     moonIconStyle.value.color = "#ed4259";
+  } else if (theme == 7) {
+    isNight.value = true;
+    moonIcon.value = "";
+    fontColor.value = config.value.fontColor = "#f6f6f4";
+    moonIconStyle.value.color = "#f6f6f4";
   } else {
     isNight.value = false;
     moonIcon.value = "";
@@ -440,8 +429,8 @@ const uploadConfig = (config) => {
           text-align: center;
           vertical-align: middle;
           display: inline-block;
-          font: 14px / 34px PingFangSC-Regular, HelveticaNeue-Light,
-            "Helvetica Neue Light", "Microsoft YaHei", sans-serif;
+          font: 14px / 34px PingFangSC-Regular, HelveticaNeue-Light, "Helvetica Neue Light",
+            "Microsoft YaHei", sans-serif;
         }
         .font-item-input {
           width: 168px;

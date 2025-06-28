@@ -27,7 +27,7 @@ const props = defineProps({
   title: { type: String, required: true },
   spacing: { type: Object, required: true },
   fontFamily: { type: String, required: true },
-  fontSize: { type: String, required: true },
+  fontSize: { type: String, required: true }
 });
 
 const getImageSrc = (content) => {
@@ -58,18 +58,16 @@ const titleRef = ref();
 const paragraphRef = ref();
 const scrollToReadedLength = (length) => {
   if (length === 0) return;
-  let paragraphIndex = chapterPos.value.findIndex(
-    (wordCount) => wordCount >= length
-  );
+  let paragraphIndex = chapterPos.value.findIndex((wordCount) => wordCount >= length);
   if (paragraphIndex === -1) return;
   nextTick(() => {
     jump(paragraphRef.value[paragraphIndex], {
-      duration: 0,
+      duration: 0
     });
   });
 };
 defineExpose({
-  scrollToReadedLength,
+  scrollToReadedLength
 });
 let intersectionObserver = null;
 const emit = defineEmits(["readedLengthChange"]);
@@ -78,16 +76,12 @@ onMounted(() => {
     (entries) => {
       for (let { target, isIntersecting } of entries) {
         if (isIntersecting) {
-          emit(
-            "readedLengthChange",
-            props.chapterIndex,
-            parseInt(target.dataset.chapterpos)
-          );
+          emit("readedLengthChange", props.chapterIndex, parseInt(target.dataset.chapterpos));
         }
       }
     },
     {
-      rootMargin: `0px 0px -${window.innerHeight - 24}px 0px`,
+      rootMargin: `0px 0px -${window.innerHeight - 24}px 0px`
     }
   );
   intersectionObserver.observe(titleRef.value);
@@ -105,8 +99,8 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .title {
   margin-bottom: 57px;
-  font: 24px / 32px PingFangSC-Regular, HelveticaNeue-Light,
-    "Helvetica Neue Light", "Microsoft YaHei", sans-serif;
+  font: 24px / 32px PingFangSC-Regular, HelveticaNeue-Light, "Helvetica Neue Light",
+    "Microsoft YaHei", sans-serif;
 }
 
 p {
