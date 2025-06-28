@@ -1,16 +1,16 @@
 # 阅读VS Code插件
 
-[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/sunrishe.legado-vscode?label=version)](https://marketplace.visualstudio.com/items?itemName=sunrishe.legado-vscode)
-[![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/sunrishe.legado-vscode?label=downloads)](https://marketplace.visualstudio.com/items?itemName=sunrishe.legado-vscode)
-[![stars](https://img.shields.io/github/stars/sunrishe/legado-vscode)](https://github.com/sunrishe/legado-vscode.git)
-[![issues](https://img.shields.io/github/issues/sunrishe/legado-vscode)](https://github.com/sunrishe/legado-vscode.git)
-[![GitHub License](https://img.shields.io/github/license/sunrishe/legado-vscode)](https://github.com/sunrishe/legado-vscode.git)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/sunrishe.legado-reader3-vscode?label=version)](https://marketplace.visualstudio.com/items?itemName=sunrishe.legado-reader3-vscode)
+[![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/sunrishe.legado-reader3-vscode?label=downloads)](https://marketplace.visualstudio.com/items?itemName=sunrishe.legado-reader3-vscode)
+[![stars](https://img.shields.io/github/stars/sunrishe/legado-reader3-vscode)](https://github.com/sunrishe/legado-reader3-vscode.git)
+[![issues](https://img.shields.io/github/issues/sunrishe/legado-reader3-vscode)](https://github.com/sunrishe/legado-reader3-vscode.git)
+[![GitHub License](https://img.shields.io/github/license/sunrishe/legado-reader3-vscode)](https://github.com/sunrishe/legado-reader3-vscode.git)
 
-📕 [GitHub仓库](https://github.com/sunrishe/legado-vscode.git)
-📗 [VS Code插件市场](https://marketplace.visualstudio.com/items?itemName=sunrishe.legado-vscode)
-📘 [更新日志](https://github.com/sunrishe/legado-vscode/blob/master/CHANGELOG.md)
+📕 [GitHub仓库](https://github.com/sunrishe/legado-reader3-vscode.git)
+📗 [VS Code插件市场](https://marketplace.visualstudio.com/items?itemName=sunrishe.legado-reader3-vscode)
+📘 [更新日志](https://github.com/sunrishe/legado-reader3-vscode/blob/master/CHANGELOG.md)
 
-📙 插件不断完善，欢迎提交 [Issues](https://github.com/sunrishe/legado-vscode/issues)、[Pull requests](https://github.com/sunrishe/legado-vscode/pulls)
+📙 插件不断完善，欢迎提交 [Issues](https://github.com/sunrishe/legado-reader3-vscode/issues)、[Pull requests](https://github.com/sunrishe/legado-reader3-vscode/pulls)
 
 ---
 
@@ -46,8 +46,8 @@
 2. 电脑和手机处于同一局域网内
 3. 在VS Code中搜索插件并安装
 4. VS Code搜索命令`阅读APP Legado: 打开阅读APP书架`并执行
-5. 点击`基本设定下的状态栏`，在弹框中输入WEB服务访问地址(阅读3App:http://{ip}:{端口} 阅读3服务器版:https://{user}@{password}:{域名}:{端口}/reader3)
-6. 测试成功后自动配置，同步修改VS Code设置`legado-vscode.webServeUrl`阅读APP的WEB服务访问地址的配置信息
+5. 点击`基本设定下的状态栏`，在弹框中输入WEB服务访问地址(`阅读3App:http://{ip}:{端口}` <br> `阅读3服务器版:https://{user}@{password}:{域名}:{端口}/reader3`)
+6. 测试成功后自动配置，同步修改VS Code设置`legado-reader3-vscode.webServeUrl`阅读APP的WEB服务访问地址的配置信息
 7. 页面自动刷新，配置生效
 
 ### 启用暗黑模式

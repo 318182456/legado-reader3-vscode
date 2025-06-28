@@ -1,5 +1,5 @@
 {
-  "name": "legado-vscode",
+  "name": "legado-reader3-vscode",
   "displayName": "阅读APP",
   "description": "配合阅读APP用来学习或摸鱼的小说阅读插件。",
   "keywords": [
@@ -11,18 +11,18 @@
     "摸鱼",
     "学习"
   ],
-  "publisher": "sunrishe",
+  "publisher": "318182456",
   "license": "GPL-3.0",
   "version": "1.4.2",
   "icon": "public/ic_launcher.png",
-  "qna": "https://github.com/sunrishe/legado-vscode/issues",
+  "qna": "https://github.com/318182456/legado-reader3-vscode/issues",
   "bugs": {
-    "url": "https://github.com/sunrishe/legado-vscode/issues",
-    "email": "i@sunrishe.com"
+    "url": "https://github.com/318182456/legado-reader3-vscode/issues",
+    "email": "318182456@qq.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sunrishe/legado-vscode.git"
+    "url": "https://github.com/318182456/legado-reader3-vscode.git"
   },
   "engines": {
     "vscode": "^1.25.0"
@@ -31,13 +31,13 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:legado-vscode.openLegado"
+    "onCommand:legado-reader3-vscode.openLegado"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "legado-vscode.openLegado",
+        "command": "legado-reader3-vscode.openLegado",
         "title": "打开阅读APP书架",
         "category": "阅读APP Legado"
       }
@@ -46,12 +46,12 @@
       "title": "阅读APP插件",
       "type": "object",
       "properties": {
-        "legado-vscode.panelTitle": {
+        "legado-reader3-vscode.panelTitle": {
           "type": "string",
           "default": "阅读",
           "description": "Tab页标题"
         },
-        "legado-vscode.webServeUrl": {
+        "legado-reader3-vscode.webServeUrl": {
           "type": "string",
           "default": "http://127.0.0.1:1122",
           "description": "阅读APP的WEB服务访问地址"

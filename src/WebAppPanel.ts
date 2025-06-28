@@ -4,7 +4,7 @@ import { getUri } from "./utilities/getUri";
 export class WebAppPanel {
   public static currentPanel: WebAppPanel | undefined;
 
-  public static readonly viewType = "legado-vscode:panel";
+  public static readonly viewType = "legado-reader3-vscode:panel";
 
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
@@ -47,7 +47,7 @@ export class WebAppPanel {
 
     // Otherwise, create a new panel.
     const title: string =
-      vscode.workspace.getConfiguration().get("legado-vscode.panelTitle") || "阅读";
+      vscode.workspace.getConfiguration().get("legado-reader3-vscode.panelTitle") || "阅读";
     const panel = vscode.window.createWebviewPanel(
       WebAppPanel.viewType,
       title,
@@ -110,7 +110,7 @@ export class WebAppPanel {
   private _getHtmlForWebview(webview: vscode.Webview) {
     const baseUri = getUri(webview, this._extensionUri, ["web", "dist"]).toString();
     let webServeUrl: string =
-      vscode.workspace.getConfiguration().get("legado-vscode.webServeUrl") || "";
+      vscode.workspace.getConfiguration().get("legado-reader3-vscode.webServeUrl") || "";
     webServeUrl = webServeUrl.replace(/^\s+|[\/\s]+$/, "");
 
     return /*html*/ `

@@ -71,7 +71,7 @@ const setLegadoWebServeUrl = (url) => {
   if (vscode) {
     vscode.postMessage({
       command: "setConfiguration",
-      key: "legado-vscode.webServeUrl",
+      key: "legado-reader3-vscode.webServeUrl",
       value: url
     });
   }
