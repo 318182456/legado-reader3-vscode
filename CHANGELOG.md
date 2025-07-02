@@ -7,7 +7,7 @@
 ## [1.4.4] - 2025-07-02
 
 - 追加[Reader3](https://github.com/hectorqin/reader) api适配
-- url格式：https://<user>@<password>:<域名>:<端口>/reader3
+- url格式：https://\<user>@\<password>:<域名>:<端口>/reader3
 
 ## [1.4.1] - 2023-09-20
 
