@@ -46,7 +46,7 @@
 2. 电脑和手机处于同一局域网内
 3. 在VS Code中搜索插件并安装
 4. VS Code搜索命令`阅读APP Legado: 打开阅读APP书架`并执行
-5. 点击`基本设定下的状态栏`，在弹框中输入WEB服务访问地址(`阅读3App:http://{ip}:{端口}` <br> `阅读3服务器版:https://{user}@{password}:{域名}:{端口}/reader3`)
+5. 点击`基本设定下的状态栏`，在弹框中输入WEB服务访问地址(`阅读3App:http://<ip>:<端口>` <br> `阅读3服务器版:https://<user>@<password>:<域名>:<端口>/reader3`)
 6. 测试成功后自动配置，同步修改VS Code设置`legado-reader3-vscode.webServeUrl`阅读APP的WEB服务访问地址的配置信息
 7. 页面自动刷新，配置生效
 
