@@ -66,6 +66,11 @@ const getLegadoWebServeUrl = () => {
   return legadoWebServeUrl || import.meta.env.VITE_API || location.origin;
 };
 
+const getReader3AssetsUrl = () => {
+  let legadoWebServeUrl = getLegadoWebServeUrl();
+  return legadoWebServeUrl.replace("/reader3", "")
+}
+
 const setLegadoWebServeUrl = (url) => {
   localStorage.setItem("legadoWebServeUrl", url);
   if (vscode) {
@@ -107,6 +112,7 @@ export default {
   isReader3,
   setIsReader3,
   getReader3Token,
+  getReader3AssetsUrl,
   getLegadoWebServeUrl,
   getBaseLegadoWebServeUrl,
   clearLegadoWebServeUrl,

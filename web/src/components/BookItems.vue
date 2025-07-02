@@ -7,6 +7,7 @@
             class="cover"
             :src="getCover(book.coverUrl)"
             :key="book.coverUrl"
+            @error="imgError"
             alt=""
             loading="lazy"
           />
@@ -41,13 +42,19 @@
 <script setup>
 import { dateFormat } from "../utils/utils";
 import WEB from "@/api/web";
+import imageErr from "@/assets/imgs/imageErr.png";
 const props = defineProps(["books", "isSearch"]);
 const emit = defineEmits(["bookClick"]);
 const handleClick = (book) => emit("bookClick", book);
 const getCover = (coverUrl) => {
   return /^data:/.test(coverUrl)
     ? coverUrl
-    : WEB.getLegadoWebServeUrl() + "/cover?path=" + encodeURIComponent(coverUrl);
+    : WEB.isReader3() && !/^http(s)?:/.test(coverUrl)
+      ? WEB.getReader3AssetsUrl() + coverUrl
+      : WEB.getLegadoWebServeUrl() + "/cover?path=" + encodeURIComponent(coverUrl);
+};
+const imgError = (e) => {
+  e.srcElement.src = imageErr;
 };
 
 const subJustify = computed(() => (props.isSearch ? "space-between" : "flex-start"));

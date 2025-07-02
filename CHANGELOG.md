@@ -4,7 +4,14 @@
 
 格式是基于[Keep a Changelog](https://keepachangelog.com/en/1.0.0/)，这个项目坚持[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.6] - 2025-07-02
+
+### 修复
+- 书籍封面加载失败时显示`[加载失败]`图片
+
 ## [1.4.5] - 2025-07-02
+
+### 新增
 
 - 追加[Reader3](https://github.com/hectorqin/reader) api适配
 - url格式：https://\<user>@\<password>:<域名>:<端口>/reader3
