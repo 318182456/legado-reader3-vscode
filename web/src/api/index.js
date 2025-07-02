@@ -21,30 +21,10 @@ ajax.interceptors.response.use((response) => response, APIExceptionHandler);
 
 // Http
 const getReadConfig = () => {
-  if (WEB.isReader3()) {
-    return Promise.resolve({
-      data: {
-        data: {
-          theme: 7,
-          font: 0,
-          fontSize: 18,
-          fontColor: "#f6f6f4",
-          readWidth: 800,
-          infiniteLoading: true,
-          customFontName: "",
-          spacing: {
-            paragraph: 1,
-            line: 0.8,
-            letter: 0
-          }
-        }
-      }
-    });
-  } else {
-    return ajax.get("/getReadConfig");
-  }
+  return ajax.get(WEB.isReader3() ? "/getUserConfig" : "/getReadConfig");
 };
-const saveReadConfig = (config) => ajax.post("/saveReadConfig", config);
+const saveReadConfig = (config) =>
+  ajax.post(WEB.isReader3() ? "/saveUserConfig" : "/saveReadConfig", config);
 
 const saveBookProgress = (bookProgress) => ajax.post("/saveBookProgress", bookProgress);
 
