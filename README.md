@@ -70,9 +70,10 @@
 
 首次接触VS Code插件开发，非常感谢他们对我的帮助。
 
-[gedoor/legado](https://github.com/gedoor/legado.git)
-[微软官方](https://github.com/microsoft/vscode-webview-ui-toolkit-samples.git)
-[CODE Magazine](https://www.codemag.com/article/2107071)
-[Mhdi-kr/vscode-webvue](https://github.com/Mhdi-kr/vscode-webvue.git)
-[jeege/vscode-reader](https://github.com/jeege/vscode-reader.git)
-[aooiuu/z-reader](https://github.com/aooiuu/z-reader.git)
+[gedoor/legado](https://github.com/gedoor/legado.git)<br>
+[微软官方](https://github.com/microsoft/vscode-webview-ui-toolkit-samples.git)<br>
+[CODE Magazine](https://www.codemag.com/article/2107071)<br>
+[Mhdi-kr/vscode-webvue](https://github.com/Mhdi-kr/vscode-webvue.git)<br>
+[jeege/vscode-reader](https://github.com/jeege/vscode-reader.git)<br>
+[aooiuu/z-reader](https://github.com/aooiuu/z-reader.git)<br>
+[sunrishe/legado-vscode](https://github.com/sunrishe/legado-vscode)<br>
