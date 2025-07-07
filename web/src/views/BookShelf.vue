@@ -145,7 +145,7 @@ const setIP = () => {
     inputValidator: (input) => {
       let reg = /^https?:\/\/((?:\d{1,3}\.){3}(?:\d{1,3})):(\d{1,5})$/;
       if (input && input.endsWith("/reader3")) {
-        reg = /^https:\/\/\w+@[\w\d]+:[\w\d]+(\.[\w\d]+)*:\d+\/\w+$/;
+        reg = /^https:\/\/\w+:[\w\d]+@[\w\d]+(\.[\w\d]+)*:\d+\/\w+$/;
         if (!reg.test(input)) {
           return false;
         }

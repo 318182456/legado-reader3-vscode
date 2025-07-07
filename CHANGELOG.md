@@ -4,6 +4,10 @@
 
 格式是基于[Keep a Changelog](https://keepachangelog.com/en/1.0.0/)，这个项目坚持[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.7] - 2025-07-07
+### 修复
+- url 更正为`https://<user>:<password>@<域名>:<端口>/reader3`
+
 ## [1.4.6] - 2025-07-02
 
 ### 修复

@@ -16,7 +16,7 @@ const setIsReader3 = (isReader3) => {
 };
 
 const getReader3Info = (str) => {
-  const regex = /^https:\/\/([^@]+)@([^:]+):([^/]+)\/(.*)$/;
+  const regex = /^https:\/\/([^:]+):([^@]+)@([^/]+)\/(.*)$/;
   const match = str.match(regex);
   const username = match[1];
   const password = match[2];
