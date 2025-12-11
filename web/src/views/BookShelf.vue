@@ -267,13 +267,44 @@ const fetchBookShelfData = () => {
       store.setConnectType("success");
       if (response.data.isSuccess) {
         //store.increaseBookNum(response.data.data.length);
-        store.addBooks(
-          response.data.data.sort(function (a, b) {
-            var x = a["durChapterTime"] || 0;
-            var y = b["durChapterTime"] || 0;
-            return y - x;
-          })
-        );
+        const sortedBooks = response.data.data.sort(function (a, b) {
+          var x = a["durChapterTime"] || 0;
+          var y = b["durChapterTime"] || 0;
+          return y - x;
+        });
+        store.addBooks(sortedBooks);
+        
+        // 更新最近阅读 - 从服务器数据中获取最新的阅读记录
+        if (sortedBooks.length > 0) {
+          // 找到最近阅读的书（按阅读时间排序）
+          const latestBook = sortedBooks.find(book => book.durChapterTime) || sortedBooks[0];
+          
+          // 如果有正在阅读的记录或者最近阅读的书存在，则更新
+          if (latestBook && (latestBook.durChapterTime || readingRecent.value.url)) {
+            // 检查是否是同一本书，如果是则更新进度；如果不是则以服务器数据为准
+            const isSameBook = latestBook.bookUrl === readingRecent.value.url;
+            
+            readingRecent.value = {
+              name: latestBook.name || "尚无阅读记录",
+              author: latestBook.author || "",
+              url: latestBook.bookUrl || "",
+              chapterIndex: latestBook.durChapterIndex || 0,
+              chapterPos: latestBook.durChapterPos || 0,
+            };
+            
+            // 如果是同一本书且服务器进度更新，则使用服务器数据
+            // 如果不是同一本书，则直接使用服务器数据（最近阅读的书）
+            if (isSameBook) {
+              // 保持服务器的最新进度
+              console.log(`同步阅读进度：${latestBook.name} - 第${latestBook.durChapterIndex}章`);
+            } else if (latestBook.bookUrl) {
+              console.log(`切换最近阅读：${latestBook.name} - 第${latestBook.durChapterIndex}章`);
+            }
+            
+            // 更新 localStorage 以保持一致性
+            localStorage.setItem("readingRecent", JSON.stringify(readingRecent.value));
+          }
+        }
       } else {
         ElMessage.error(response.data.errorMsg);
       }
