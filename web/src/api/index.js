@@ -26,7 +26,20 @@ const getReadConfig = () => {
 const saveReadConfig = (config) =>
   ajax.post(WEB.isReader3() ? "/saveUserConfig" : "/saveReadConfig", config);
 
-const saveBookProgress = (bookProgress) => ajax.post("/saveBookProgress", bookProgress);
+const saveBookProgress = (bookProgress) => {
+  if (!bookProgress) return Promise.resolve();
+  if (WEB.isReader3()) {
+    // reader3 通过 bookUrl + chapterIndex 定位书籍，同时传递精确段落位置
+    const bookUrl = sessionStorage.getItem("bookUrl");
+    return ajax.post("/saveBookProgress", {
+      url: bookUrl,
+      index: bookProgress.durChapterIndex,
+      durChapterPos: bookProgress.durChapterPos,
+    });
+  }
+  // legado 原版 App: BookProgress 格式（name + author 定位）
+  return ajax.post("/saveBookProgress", bookProgress);
+};
 
 const saveBookProgressWithBeacon = (bookProgress) => {
   if (!bookProgress) return;
