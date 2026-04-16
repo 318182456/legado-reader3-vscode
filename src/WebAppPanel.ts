@@ -99,6 +99,9 @@ export class WebAppPanel {
       case "reload":
         WebAppPanel.currentPanel?._update();
         return;
+      case "printToConsole":
+        // Do nothing in standalone mode
+        return;
     }
   }
 

@@ -55,8 +55,36 @@
           "type": "string",
           "default": "http://127.0.0.1:1122",
           "description": "阅读APP的WEB服务访问地址"
+        },
+        "legado-reader3-vscode.enableBottomPanel": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否启用底部阅读独立面板"
+        },
+        "legado-reader3-vscode.bottomPanelTitle": {
+          "type": "string",
+          "default": "摸鱼输出",
+          "description": "底部阅读面板的自定义标签名称"
         }
       }
+    },
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "legado-panel",
+          "title": "阅读",
+          "icon": "public/ic_launcher.png"
+        }
+      ]
+    },
+    "views": {
+      "legado-panel": [
+        {
+          "type": "webview",
+          "id": "legado-reader3-vscode.bottomView",
+          "name": "阅读界面"
+        }
+      ]
     }
   },
   "private": true,
@@ -64,18 +92,18 @@
     "web"
   ],
   "scripts": {
-    "web:build": "yarn --cwd web run build",
-    "web:dev": "yarn --cwd web run dev",
-    "web:watch": "yarn --cwd web run watch",
-    "build": "yarn run web:build && vsce package",
-    "vscode:prepublish": "yarn run package",
+    "web:build": "npm run build --prefix web",
+    "web:dev": "npm run dev --prefix web",
+    "web:watch": "npm run watch --prefix web",
+    "build": "npm run web:build && vsce package",
+    "vscode:prepublish": "npm run package",
     "compile": "webpack",
     "watch": "webpack --watch",
-    "watch:all": "concurrently \"yarn run web:watch\" \"yarn run watch\"",
+    "watch:all": "concurrently \"npm run web:watch\" \"npm run watch\"",
     "package": "webpack --mode production --devtool hidden-source-map",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"
   },
@@ -99,5 +127,9 @@
     "vsce": "^2.15.0",
     "webpack": "^5.81.0",
     "webpack-cli": "^5.0.2"
+  },
+  "volta": {
+    "node": "16.20.2",
+    "npm": "8.19.4"
   }
 }

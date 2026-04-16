@@ -146,6 +146,7 @@
             >开启</span
           >
         </li>
+
       </ul>
     </div>
   </div>
@@ -330,6 +331,7 @@ const setInfiniteLoading = (loading) => {
   config.value.infiniteLoading = loading;
   saveConfig(config.value);
 };
+
 const saveConfig = (config) => {
   store.setConfig(config);
   localStorage.setItem("config", JSON.stringify(config));

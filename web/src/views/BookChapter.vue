@@ -5,7 +5,7 @@
     :class="{ night: isNight, day: !isNight }"
     @click="showToolBar = !showToolBar"
   >
-    <div class="tool-bar" :style="leftBarTheme">
+    <div class="tool-bar" :style="leftBarTheme" @click.stop>
       <div class="tools">
         <el-popover
           placement="right"
@@ -53,7 +53,7 @@
         </div>
       </div>
     </div>
-    <div class="read-bar" :style="rightBarTheme">
+    <div class="read-bar" :style="rightBarTheme" @click.stop>
       <div class="tools">
         <div class="tool-icon" :class="{ 'no-point': noPoint }" @click="toPreChapter">
           <div class="iconfont">&#58920;</div>
@@ -62,6 +62,10 @@
         <div class="tool-icon" :class="{ 'no-point': noPoint }" @click="toNextChapter">
           <span v-if="miniInterface">下一章</span>
           <div class="iconfont">&#58913;</div>
+        </div>
+        <div class="tool-icon" @click.stop="toggleZenMode">
+          <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">{{ isZenMode ? '▣' : '▢' }}</div>
+          <div class="icon-text">{{ isZenMode ? '还原' : '全屏' }}</div>
         </div>
       </div>
     </div>
@@ -150,10 +154,10 @@ const chapterColor = computed(() => settings.themes[theme.value].content);
 const popupColor = computed(() => settings.themes[theme.value].popup);
 
 const readWidth = computed(() => {
-  if (!miniInterface.value) {
-    return store.config.readWidth - 130 + "px";
+  if (!miniInterface.value && !isZenMode.value) {
+    return store.config.readWidth + "px";
   } else {
-    return window.innerWidth + "px";
+    return "100%";
   }
 });
 const popupWidth = computed(() => {
@@ -171,11 +175,38 @@ const bodyTheme = computed(() => {
 const chapterTheme = computed(() => {
   return {
     background: chapterColor.value,
-    width: readWidth.value
+    width: isZenMode.value ? "100%" : readWidth.value
   };
 });
+const isZenMode = ref(false);
+const toggleZenMode = () => {
+  isZenMode.value = !isZenMode.value;
+  if (isZenMode.value) {
+    showToolBar.value = false;
+  }
+};
 const showToolBar = ref(false);
 const leftBarTheme = computed(() => {
+  if (isZenMode.value) {
+    if (miniInterface.value) {
+      return {
+        background: popupColor.value,
+        marginLeft: 0,
+        display: showToolBar.value ? 'block' : 'none'
+      };
+    } else {
+      return {
+        background: popupColor.value,
+        left: '20px',
+        marginLeft: '0px',
+        top: '50vh',
+        transform: 'translateY(-50%)',
+        display: showToolBar.value ? 'block' : 'none',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+      };
+    }
+  }
   return {
     background: popupColor.value,
     marginLeft: miniInterface.value ? 0 : -(store.config.readWidth / 2 + 68) + "px",
@@ -183,6 +214,27 @@ const leftBarTheme = computed(() => {
   };
 });
 const rightBarTheme = computed(() => {
+  if (isZenMode.value) {
+    if (miniInterface.value) {
+      return {
+        background: popupColor.value,
+        marginRight: 0,
+        display: showToolBar.value ? 'block' : 'none'
+      };
+    } else {
+      return {
+        background: popupColor.value,
+        right: '20px',
+        left: 'auto',
+        marginRight: '0px',
+        bottom: '50vh',
+        transform: 'translateY(50%)',
+        display: showToolBar.value ? 'block' : 'none',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+      };
+    }
+  }
   return {
     background: popupColor.value,
     marginRight: miniInterface.value ? 0 : -(store.config.readWidth / 2 + 52) + "px",
@@ -256,6 +308,8 @@ const getContent = (index, reloadChapter = true, chapterPos = 0) => {
           let content = data.split(/\n+/);
           chapterData.value.push({ index, content, title });
           if (reloadChapter) toChapterPos(chapterPos);
+          let outputText = `========== ${title} ==========\n\n` + content.join('\n\n');
+          WEB.printToConsole(outputText);
         } else {
           ElMessage({ message: res.data.errorMsg, type: "error" });
           let content = [res.data.errorMsg];
@@ -460,6 +514,12 @@ const handleKeyPress = (event) => {
       event.preventDefault();
       getContent(chapterIndex.value);
       break;
+    case "F":
+    case "f":
+      event.stopPropagation();
+      event.preventDefault();
+      toggleZenMode();
+      break;
     case "ArrowLeft":
     case "A":
     case "a":
@@ -663,6 +723,8 @@ onUnmounted(() => {
     padding: 0 65px;
     min-height: 100vh;
     width: 670px;
+    max-width: 100%;
+    box-sizing: border-box;
     margin: 0 auto;
 
     .content {

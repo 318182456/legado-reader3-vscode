@@ -107,6 +107,15 @@ const reload = () => {
   }
 };
 
+const printToConsole = (text) => {
+  if (vscode) {
+    vscode.postMessage({
+      command: "printToConsole",
+      text: text
+    });
+  }
+};
+
 export default {
   isVscode,
   isReader3,
@@ -118,5 +127,6 @@ export default {
   clearLegadoWebServeUrl,
   setLegadoWebServeUrl,
   checkLegadoWebServeUrl,
-  reload
+  reload,
+  printToConsole
 };
