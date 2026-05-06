@@ -255,12 +255,14 @@ const leftBarTheme = computed(() => {
     if (miniInterface.value) {
       return {
         background: popupColor.value,
+        color: fontColor.value,
         marginLeft: 0,
         display: showToolBar.value ? 'block' : 'none'
       };
     } else {
       return {
         background: popupColor.value,
+        color: fontColor.value,
         left: '20px',
         marginLeft: '0px',
         top: '50vh',
@@ -273,6 +275,7 @@ const leftBarTheme = computed(() => {
   }
   return {
     background: popupColor.value,
+    color: fontColor.value,
     marginLeft: miniInterface.value ? 0 : -(store.config.readWidth / 2 + 68) + "px",
     display: miniInterface.value && !showToolBar.value ? "none" : "block"
   };
@@ -282,12 +285,14 @@ const rightBarTheme = computed(() => {
     if (miniInterface.value) {
       return {
         background: popupColor.value,
+        color: fontColor.value,
         marginRight: 0,
         display: showToolBar.value ? 'block' : 'none'
       };
     } else {
       return {
         background: popupColor.value,
+        color: fontColor.value,
         right: '20px',
         left: 'auto',
         marginRight: '0px',
@@ -301,6 +306,7 @@ const rightBarTheme = computed(() => {
   }
   return {
     background: popupColor.value,
+    color: fontColor.value,
     marginRight: miniInterface.value ? 0 : -(store.config.readWidth / 2 + 52) + "px",
     display: miniInterface.value && !showToolBar.value ? "none" : "block"
   };

@@ -24,7 +24,7 @@ import CatalogItem from "./CatalogItem.vue";
 
 const store = useBookStore();
 
-const isNight = computed(() => theme.value == 6);
+const isNight = computed(() => theme.value >= 6);
 const { catalog, popCataVisible, miniInterface } = storeToRefs(store);
 
 const theme = computed(() => {
@@ -32,7 +32,8 @@ const theme = computed(() => {
 });
 const popupTheme = computed(() => {
   return {
-    background: settings.themes[theme.value].popup
+    background: settings.themes[theme.value].popup,
+    color: store.config.fontColor
   };
 });
 
