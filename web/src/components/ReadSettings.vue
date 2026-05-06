@@ -161,7 +161,7 @@ const store = useBookStore();
 
 const theme = ref(0);
 
-const isNight = ref(store.config.theme == 6);
+const isNight = ref(store.config.theme >= 6);
 const moonIcon = ref("");
 const themeColors = shallowRef([
   {
@@ -186,7 +186,7 @@ const themeColors = shallowRef([
     background: "rgba(0, 0, 0, 0.5)"
   },
   {
-    background: "rgb(40, 42, 54)"
+    background: "linear-gradient(135deg, #282a36 50%, #44475a 50%)"
   }
 ]);
 const moonIconStyle = ref({
@@ -201,7 +201,7 @@ onMounted(() => {
   //初始化设置项目
   var config = store.config;
   theme.value = config.theme;
-  if (theme.value == 6) {
+  if (theme.value >= 6) {
     moonIcon.value = "";
   } else {
     moonIcon.value = "";
@@ -233,8 +233,8 @@ const setTheme = (theme) => {
   } else if (theme == 7) {
     isNight.value = true;
     moonIcon.value = "";
-    fontColor.value = config.value.fontColor = "#f6f6f4";
-    moonIconStyle.value.color = "#f6f6f4";
+    fontColor.value = config.value.fontColor = "#f8f8f2";
+    moonIconStyle.value.color = "#ff79c6";
   } else {
     isNight.value = false;
     moonIcon.value = "";
@@ -257,7 +257,13 @@ const setCustomFont = () => {
 const fontColor = ref(config.value.fontColor);
 const saveFontColor = (color) => {
   if (!color) {
-    color = config.value.theme == 6 ? "#666" : "#262626";
+    if (config.value.theme == 6) {
+      color = "#666";
+    } else if (config.value.theme == 7) {
+      color = "#f8f8f2";
+    } else {
+      color = "#262626";
+    }
   }
   fontColor.value = config.value.fontColor = color;
   saveConfig(config.value);

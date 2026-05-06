@@ -54,9 +54,9 @@ var settings = {
       popup: "#ede7da url(" + popup_6 + ") repeat"
     },
     {
-      body: "rgb(40, 42, 54) repeat",
-      content: "rgb(40, 42, 54) repeat",
-      popup: "rgb(40, 42, 54) repeat"
+      body: "#282a36 repeat",
+      content: "#282a36 repeat",
+      popup: "#44475a repeat"
     }
   ],
   fonts: [
