@@ -116,6 +116,17 @@ const printToConsole = (text) => {
   }
 };
 
+const setTitle = (title) => {
+  if (vscode) {
+    vscode.postMessage({
+      command: "setTitle",
+      title: title
+    });
+  } else {
+    document.title = title;
+  }
+};
+
 export default {
   isVscode,
   isReader3,
@@ -128,5 +139,6 @@ export default {
   setLegadoWebServeUrl,
   checkLegadoWebServeUrl,
   reload,
-  printToConsole
+  printToConsole,
+  setTitle
 };

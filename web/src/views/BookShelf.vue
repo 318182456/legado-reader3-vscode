@@ -6,34 +6,26 @@
         <div class="navigation-sub-title">清风不识字，何故乱翻书</div>
       </div>
       <div class="search-wrapper">
-        <el-input
-          placeholder="搜索书籍，在线书籍自动加入书架"
-          v-model="search"
-          class="search-input"
-          :prefix-icon="Search"
-          @keyup.enter="searchBook"
-        >
+        <el-input placeholder="搜索书籍，在线书籍自动加入书架" v-model="search" class="search-input" :prefix-icon="Search"
+          @keyup.enter="searchBook">
         </el-input>
       </div>
       <div class="bottom-wrapper">
         <div class="recent-wrapper">
-          <div class="recent-title">最近阅读</div>
+          <div class="recent-title" style="display: flex; align-items: center; gap: 8px;">
+            最近阅读
+            <el-button :icon="Refresh" circle size="small" @click="refreshData" title="同步服务器情报"></el-button>
+          </div>
           <div class="reading-recent">
-            <el-tag
-              :type="readingRecent.name == '尚无阅读记录' ? 'warning' : ''"
-              class="recent-book"
-              size="large"
-              @click="
-                toDetail(
-                  readingRecent.url,
-                  readingRecent.name,
-                  readingRecent.author,
-                  readingRecent.chapterIndex,
-                  readingRecent.chapterPos
-                )
-              "
-              :class="{ 'no-point': readingRecent.url == '' }"
-            >
+            <el-tag :type="readingRecent.name == '尚无阅读记录' ? 'warning' : ''" class="recent-book" size="large" @click="
+              toDetail(
+                readingRecent.url,
+                readingRecent.name,
+                readingRecent.author,
+                readingRecent.chapterIndex,
+                readingRecent.chapterPos
+              )
+              " :class="{ 'no-point': readingRecent.url == '' }">
               {{ readingRecent.name }}
             </el-tag>
           </div>
@@ -41,13 +33,8 @@
         <div class="setting-wrapper">
           <div class="setting-title">基本设定</div>
           <div class="setting-item">
-            <el-tag
-              :type="connectType"
-              size="large"
-              class="setting-connect"
-              :class="{ 'no-point': newConnect }"
-              @click="setIP"
-            >
+            <el-tag :type="connectType" size="large" class="setting-connect" :class="{ 'no-point': newConnect }"
+              @click="setIP">
               {{ connectStatus }}
             </el-tag>
           </div>
@@ -72,7 +59,7 @@ import "@/assets/fonts/shelffont.css";
 import { useBookStore } from "@/store";
 import githubUrl from "@/assets/imgs/github.png";
 import { useLoading } from "@/hooks/loading";
-import { Search } from "@element-plus/icons-vue";
+import { Search, Refresh } from "@element-plus/icons-vue";
 import API from "@api";
 import WEB from "@/api/web";
 
@@ -206,7 +193,7 @@ const setIP = () => {
         }
       });
     })
-    .catch(() => {});
+    .catch(() => { });
 };
 
 const router = useRouter();
@@ -263,17 +250,54 @@ const fetchBookShelfData = () => {
           return y - x;
         });
         store.addBooks(sortedBooks);
-        
+
         // 更新最近阅读 - 从服务器数据中获取最新的阅读记录
         if (sortedBooks.length > 0) {
-          // 找到最近阅读的书（按阅读时间排序）
+          // 1. 尝试在书架中找到本地最近阅读的书籍
+          const localRecentBookInShelf = readingRecent.value.url ? sortedBooks.find(b => b.bookUrl === readingRecent.value.url) : null;
+
+          if (localRecentBookInShelf) {
+            // 对比本地最近阅读记录和服务器该书的记录
+            const localIndex = Number(readingRecent.value.chapterIndex) || 0;
+            const localPos = Number(readingRecent.value.chapterPos) || 0;
+            const serverIndex = Number(localRecentBookInShelf.durChapterIndex) || 0;
+            const serverPos = Number(localRecentBookInShelf.durChapterPos) || 0;
+
+            if (localIndex > serverIndex || (localIndex === serverIndex && localPos > serverPos)) {
+              // 本地对于这本书的进度比服务器新！
+              localRecentBookInShelf.durChapterIndex = localIndex;
+              localRecentBookInShelf.durChapterPos = localPos;
+              // 更新服务器时间，让它在服务端也变成最新的
+              localRecentBookInShelf.durChapterTime = new Date().getTime();
+
+              // 推送本地较新进度到服务器
+              sessionStorage.setItem("bookUrl", readingRecent.value.url);
+              API.saveBookProgress({
+                name: readingRecent.value.name,
+                author: readingRecent.value.author,
+                bookUrl: readingRecent.value.url,
+                durChapterIndex: localIndex,
+                durChapterPos: localPos,
+                durChapterTime: localRecentBookInShelf.durChapterTime,
+                durChapterTitle: localRecentBookInShelf.durChapterTitle || ""
+              });
+
+              // 由于我们更新了时间，重新排序一下 sortedBooks
+              sortedBooks.sort(function (a, b) {
+                var x = a["durChapterTime"] || 0;
+                var y = b["durChapterTime"] || 0;
+                return y - x;
+              });
+
+              console.log(`本地进度较新，已同步至服务端：${localRecentBookInShelf.name} - 第${localIndex}章`);
+            }
+          }
+
+          // 找到最近阅读的书（按阅读时间排序，经过上面可能的重新排序，最上面的就是真正最新的）
           const latestBook = sortedBooks.find(book => book.durChapterTime) || sortedBooks[0];
-          
-          // 如果有正在阅读的记录或者最近阅读的书存在，则更新
+
           if (latestBook && (latestBook.durChapterTime || readingRecent.value.url)) {
-            // 检查是否是同一本书，如果是则更新进度；如果不是则以服务器数据为准
-            const isSameBook = latestBook.bookUrl === readingRecent.value.url;
-            
+            // 直接以最新的 latestBook 为准更新 readingRecent
             readingRecent.value = {
               name: latestBook.name || "尚无阅读记录",
               author: latestBook.author || "",
@@ -281,16 +305,7 @@ const fetchBookShelfData = () => {
               chapterIndex: latestBook.durChapterIndex || 0,
               chapterPos: latestBook.durChapterPos || 0,
             };
-            
-            // 如果是同一本书且服务器进度更新，则使用服务器数据
-            // 如果不是同一本书，则直接使用服务器数据（最近阅读的书）
-            if (isSameBook) {
-              // 保持服务器的最新进度
-              console.log(`同步阅读进度：${latestBook.name} - 第${latestBook.durChapterIndex}章`);
-            } else if (latestBook.bookUrl) {
-              console.log(`切换最近阅读：${latestBook.name} - 第${latestBook.durChapterIndex}章`);
-            }
-            
+
             // 更新 localStorage 以保持一致性
             localStorage.setItem("readingRecent", JSON.stringify(readingRecent.value));
           }
@@ -308,6 +323,17 @@ const fetchBookShelfData = () => {
       store.setNewConnect(false);
       throw error;
     });
+};
+
+const refreshData = () => {
+  loadingWrapper(
+    store
+      .saveBookProgress()
+      .finally(fetchBookShelfData)
+      .then(() => {
+        ElMessage.success("同步成功");
+      })
+  );
 };
 </script>
 
@@ -421,34 +447,42 @@ const fetchBookShelfData = () => {
   .index-wrapper {
     overflow-x: hidden;
     flex-direction: column;
+
     .navigation-wrapper {
       padding: 20px 24px;
       box-sizing: border-box;
       width: 100%;
+
       .navigation-title-wrapper {
         white-space: nowrap;
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
       }
+
       .bottom-wrapper {
         flex-direction: row;
-        > * {
+
+        >* {
           flex-grow: 1;
           margin-top: 18px;
+
           .reading-recent,
           .setting-item {
             margin-bottom: 0px;
           }
         }
       }
+
       .bottom-icons {
         display: none;
       }
     }
+
     .shelf-wrapper {
       padding: 0;
       flex-grow: 1;
+
       :deep(.el-loading-spinner) {
         display: none;
       }
@@ -459,20 +493,24 @@ const fetchBookShelfData = () => {
 .night {
   :deep(.navigation-wrapper) {
     background-color: #454545;
+
     .navigation-title {
       color: #aeaeae;
     }
+
     .search-wrapper {
       .search-input {
         .el-input__wrapper {
           background-color: #454545;
         }
+
         .el-input__inner {
           color: #b1b1b1;
         }
       }
     }
   }
+
   :deep(.shelf-wrapper) {
     background-color: #161819;
   }

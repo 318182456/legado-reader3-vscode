@@ -91,6 +91,11 @@ export class WebAppPanel {
       case "alert":
         vscode.window.showErrorMessage(message.text);
         return;
+      case "setTitle":
+        if (WebAppPanel.currentPanel) {
+          WebAppPanel.currentPanel._panel.title = message.title;
+        }
+        return;
       case "setConfiguration":
         vscode.workspace
           .getConfiguration()
@@ -115,6 +120,7 @@ export class WebAppPanel {
     let webServeUrl: string =
       vscode.workspace.getConfiguration().get("legado-reader3-vscode.webServeUrl") || "";
     webServeUrl = webServeUrl.replace(/^\s+|[\/\s]+$/, "");
+    const nonce = new Date().getTime();
 
     return /*html*/ `
       <!DOCTYPE html>
@@ -133,6 +139,7 @@ export class WebAppPanel {
         </head>
         <body>
           <div id="app"></div>
+          <!-- nonce: ${nonce} -->
         </body>
       </html>
     `;

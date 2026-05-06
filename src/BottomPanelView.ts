@@ -40,6 +40,11 @@ export class BottomPanelView implements vscode.WebviewViewProvider {
       case "alert":
         vscode.window.showErrorMessage(message.text);
         return;
+      case "setTitle":
+        if (this._view) {
+          this._view.title = message.title;
+        }
+        return;
       case "setConfiguration":
         vscode.workspace
           .getConfiguration()
@@ -69,6 +74,7 @@ export class BottomPanelView implements vscode.WebviewViewProvider {
     let webServeUrl: string =
       vscode.workspace.getConfiguration().get("legado-reader3-vscode.webServeUrl") || "";
     webServeUrl = webServeUrl.replace(/^\s+|[\/\s]+$/, "");
+    const nonce = new Date().getTime();
 
     return /*html*/ `
       <!DOCTYPE html>
@@ -87,6 +93,7 @@ export class BottomPanelView implements vscode.WebviewViewProvider {
         </head>
         <body>
           <div id="app"></div>
+          <!-- nonce: ${nonce} -->
         </body>
       </html>
     `;

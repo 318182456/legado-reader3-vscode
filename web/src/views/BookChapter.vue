@@ -5,6 +5,9 @@
     :class="{ night: isNight, day: !isNight }"
     @click="showToolBar = !showToolBar"
   >
+    <div class="chapter-title-float" :style="{ color: fontColor, background: bodyColor }">
+      {{ catalog[chapterIndex]?.title }}{{ chapterProgress }}
+    </div>
     <div class="tool-bar" :style="leftBarTheme" @click.stop>
       <div class="tools">
         <el-popover
@@ -130,6 +133,22 @@ const chapterPos = computed({
 const chapterIndex = computed({
   get: () => readingBook.value.index,
   set: (value) => (readingBook.value.index = value)
+});
+
+const chapterProgress = computed(() => {
+  const data = chapterData.value.find((c) => c.index === chapterIndex.value);
+  if (!data || !data.content || data.content.length === 0) return "";
+  
+  const imgPattern = /<img[^>]*src="[^"]*(?:"[^>]+\})?"[^>]*>/g;
+  const total = data.content.reduce((sum, para) => {
+    return sum + (para ? para.replaceAll(imgPattern, " ").length : 0) + 1;
+  }, 0);
+  
+  if (total <= 0) return "";
+  let pct = (chapterPos.value / total) * 100;
+  if (pct < 0) pct = 0;
+  if (pct > 100) pct = 100;
+  return ` (${pct.toFixed(1)}%)`;
 });
 
 const theme = computed(() => config.value.theme);
@@ -348,7 +367,12 @@ const onReadedLengthChange = (index, pos) => {
 
 // 文档标题
 watchEffect(() => {
-  document.title = catalog.value[chapterIndex.value]?.title || document.title;
+  let title = catalog.value[chapterIndex.value]?.title;
+  if(title) {
+    let fullTitle = title + chapterProgress.value;
+    document.title = fullTitle;
+    WEB.setTitle(fullTitle);
+  }
 });
 
 // 阅读记录保存浏览器
@@ -639,6 +663,25 @@ onUnmounted(() => {
 
 :deep(.pop-cata) {
   margin-left: 10px;
+}
+
+.chapter-title-float {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  font-size: 12px;
+  z-index: 99;
+  opacity: 0.8;
+  pointer-events: none;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 10px;
 }
 
 .chapter-wrapper {
