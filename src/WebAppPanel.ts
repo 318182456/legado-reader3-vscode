@@ -19,12 +19,10 @@ export class WebAppPanel {
 
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
-    // Update the content based on view changes
+    // Handle state changes if necessary without reloading the entire webview
     this._panel.onDidChangeViewState(
       (e) => {
-        if (this._panel.visible) {
-          this._update();
-        }
+        // retainContextWhenHidden is true, so no need to reload html on visibility change
       },
       null,
       this._disposables

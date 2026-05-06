@@ -116,6 +116,51 @@ try {
   localStorage.removeItem("config");
 }
 
+let isRestoringScroll = false;
+let lastUserInteraction = Date.now();
+const recordUserInteraction = () => {
+  lastUserInteraction = Date.now();
+};
+window.addEventListener("wheel", recordUserInteraction, { passive: true });
+window.addEventListener("touchmove", recordUserInteraction, { passive: true });
+window.addEventListener("keydown", recordUserInteraction, { passive: true });
+window.addEventListener("mousedown", recordUserInteraction, { passive: true });
+window.addEventListener("mousemove", (e) => {
+  if (e.buttons > 0) recordUserInteraction();
+}, { passive: true });
+
+const getExactScrollKey = () => {
+  const bookUrl = sessionStorage.getItem("bookUrl");
+  if (!bookUrl) return null;
+  return `exactScroll_${bookUrl}_${chapterIndex.value}`;
+};
+
+const onScroll = () => {
+  if (isRestoringScroll) return;
+  
+  const currentScrollY = window.scrollY || document.documentElement.scrollTop;
+  const key = getExactScrollKey();
+  
+  // 忽略并修正 VS Code Webview 隐藏/显示时突然将 scrollTop 重置为 0 的行为
+  if (currentScrollY === 0 && Date.now() - lastUserInteraction > 1000) {
+    if (key) {
+      const exactScroll = localStorage.getItem(key);
+      if (exactScroll && Number(exactScroll) > 0) {
+        // 检测到非用户操作导致的归零，强制恢复到真实进度
+        isRestoringScroll = true;
+        window.scrollTo({ top: Number(exactScroll), behavior: "instant" });
+        setTimeout(() => { isRestoringScroll = false; }, 200);
+        return;
+      }
+    }
+  }
+  
+  if (key) {
+    localStorage.setItem(key, String(currentScrollY));
+  }
+};
+window.addEventListener("scroll", onScroll, { passive: true });
+
 const {
   catalog,
   popCataVisible,
@@ -356,11 +401,26 @@ const getContent = (index, reloadChapter = true, chapterPos = 0) => {
 const chapter = ref();
 const chapterRef = ref();
 const toChapterPos = (pos) => {
-  nextTick(() => {
-    if (chapterRef.value.length === 1) chapterRef.value[0].scrollToReadedLength(pos);
-  });
+  const exactScrollKey = getExactScrollKey();
+  const exactScroll = exactScrollKey ? localStorage.getItem(exactScrollKey) : null;
+  
+  if (exactScroll) {
+    isRestoringScroll = true;
+    nextTick(() => {
+      window.scrollTo({ top: Number(exactScroll), behavior: "instant" });
+      setTimeout(() => { isRestoringScroll = false; }, 200);
+    });
+  } else {
+    nextTick(() => {
+      if (chapterRef.value.length === 1) chapterRef.value[0].scrollToReadedLength(pos);
+    });
+  }
 };
 const onReadedLengthChange = (index, pos) => {
+  // 防止 VS Code 重置滚动条导致的进度归零
+  if (pos === 0 && document.documentElement.scrollTop === 0 && Date.now() - lastUserInteraction > 1000) {
+    return;
+  }
   saveReadingBookProgressToBrowser(index, pos);
   saveReadingBookProgressToApp();
 };
@@ -426,14 +486,24 @@ const saveRBPToAppId = setInterval(saveReadingBookProgressToApp, 10_000);
 // 进度同步
 // 返回导航变化 同步请求会在获取书架前完成
 
-/**
- * VisibilityChange https://developer.mozilla.org/zh-CN/docs/Web/API/Document/visibilitychange_event
- * 监听关闭页面 切换tab 返回桌面 等操作
- * 注意不用监听点击链接导航变化 不对Safari<14.5兼容处理
- **/
+const savedState = ref({ index: -1, pos: -1 });
+
 const onVisibilityChange = () => {
   if (document.visibilityState == "hidden") {
+    savedState.value = { index: chapterIndex.value, pos: chapterPos.value };
     API.saveBookProgressWithBeacon(bookProgress.value);
+  } else if (document.visibilityState == "visible") {
+    // 恢复由于VS Code webview隐藏再显示时导致的滚动条重置问题
+    if (savedState.value.index !== -1 && savedState.value.pos !== -1) {
+      setTimeout(() => {
+        if (chapterIndex.value === savedState.value.index) {
+          chapterPos.value = savedState.value.pos;
+          toChapterPos(savedState.value.pos);
+          saveReadingBookProgressToBrowser(savedState.value.index, savedState.value.pos);
+        }
+      }, 100);
+      toChapterPos(savedState.value.pos);
+    }
   }
 };
 
@@ -647,6 +717,11 @@ onUnmounted(() => {
   clearInterval(saveRBPToAppId);
   window.removeEventListener("keyup", handleKeyPress);
   window.removeEventListener("resize", onResize);
+  window.removeEventListener("wheel", recordUserInteraction);
+  window.removeEventListener("touchmove", recordUserInteraction);
+  window.removeEventListener("keydown", recordUserInteraction);
+  window.removeEventListener("mousedown", recordUserInteraction);
+  window.removeEventListener("scroll", onScroll);
   // 兼容Safari < 14
   document.removeEventListener("visibilitychange", onVisibilityChange);
   readSettingsVisible.value = false;

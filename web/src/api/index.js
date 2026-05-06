@@ -43,10 +43,22 @@ const saveBookProgress = (bookProgress) => {
 
 const saveBookProgressWithBeacon = (bookProgress) => {
   if (!bookProgress) return;
+  
+  let payload = bookProgress;
+  if (WEB.isReader3()) {
+    const bookUrl = sessionStorage.getItem("bookUrl");
+    payload = {
+      url: bookUrl,
+      index: bookProgress.durChapterIndex,
+      durChapterPos: bookProgress.durChapterPos,
+    };
+  }
+
   // 常规请求可能会被取消 使用Fetch keep-alive 或者 navigator.sendBeacon
+  const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
   navigator.sendBeacon(
     `${WEB.getLegadoWebServeUrl()}/saveBookProgress`,
-    JSON.stringify(bookProgress)
+    blob
   );
 };
 
