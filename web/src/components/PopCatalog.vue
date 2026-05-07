@@ -24,7 +24,7 @@ import CatalogItem from "./CatalogItem.vue";
 
 const store = useBookStore();
 
-const isNight = computed(() => theme.value >= 6);
+const isNight = computed(() => settings.themes[theme.value]?.isNight || false);
 const { catalog, popCataVisible, miniInterface } = storeToRefs(store);
 
 const theme = computed(() => {

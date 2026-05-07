@@ -14,9 +14,14 @@
             @click="setTheme(index)"
             :class="{ selected: selectedTheme == index }"
           >
-            <em v-if="index < 6" class="iconfont">&#58980;</em>
-            <em v-else-if="selectedTheme != index" class="moon-icon">""</em>
-            <em v-else class="iconfont">""</em>
+            <div 
+              class="theme-name" 
+              :style="{ color: settings.themes[index].defaultFontColor || (settings.themes[index].isNight ? '#f8f8f2' : '#262626') }"
+            >
+              {{ settings.themes[index].name }}
+            </div>
+            <em class="iconfont night-icon" v-if="settings.themes[index].isNight">&#58980;</em>
+            <em class="iconfont selected-icon" v-if="selectedTheme == index">&#58940;</em>
           </span>
         </li>
         <li class="font-list">
@@ -38,7 +43,7 @@
             :key="index"
             :class="{ selected: selectedFont == index }"
             @click="setFont(index)"
-            >{{ font }}</span
+            >{{ getFontDisplayName(font) }}</span
           >
         </li>
         <li class="font-list">
@@ -161,39 +166,46 @@ const store = useBookStore();
 
 const theme = ref(0);
 
-const isNight = ref(store.config.theme >= 6);
+const isNight = ref(settings.themes[store.config.theme]?.isNight || false);
 const moonIcon = ref("");
-const themeColors = shallowRef([
-  {
-    background: "rgba(250, 245, 235, 0.8)"
-  },
-  {
-    background: "rgba(245, 234, 204, 0.8)"
-  },
-  {
-    background: "rgba(230, 242, 230, 0.8)"
-  },
-  {
-    background: "rgba(228, 241, 245, 0.8)"
-  },
-  {
-    background: "rgba(245, 228, 228, 0.8)"
-  },
-  {
-    background: "rgba(224, 224, 224, 0.8)"
-  },
-  {
-    background: "rgba(0, 0, 0, 0.5)"
-  },
-  {
-    background: "linear-gradient(135deg, #282a36 50%, #44475a 50%)"
-  }
-]);
+const defaultThemeColors = [
+  { background: "rgba(250, 245, 235, 0.8)" },
+  { background: "rgba(245, 234, 204, 0.8)" },
+  { background: "rgba(230, 242, 230, 0.8)" },
+  { background: "rgba(228, 241, 245, 0.8)" },
+  { background: "rgba(245, 228, 228, 0.8)" },
+  { background: "rgba(224, 224, 224, 0.8)" },
+  { background: "rgba(0, 0, 0, 0.5)" },
+  { background: "linear-gradient(135deg, #282a36 50%, #21222c 50%)" }
+];
+
+const themeColors = computed(() => {
+  return settings.themes.map((t, index) => {
+    if (index < defaultThemeColors.length) {
+      return defaultThemeColors[index];
+    }
+    return { background: t.body, backgroundSize: "cover" };
+  });
+});
 const moonIconStyle = ref({
   display: "inline",
   color: "rgba(255,255,255,0.2)"
 });
-const fonts = ref(["雅黑", "宋体", "楷书"]);
+const fonts = computed(() => settings.fonts);
+const getFontDisplayName = (fontFamily) => {
+  let name = fontFamily;
+  if (fontFamily.includes("Microsoft YaHei")) return "雅黑";
+  if (fontFamily.includes("Simsun")) return "宋体";
+  if (fontFamily.includes("Kaiti")) return "楷书";
+  if (fontFamily.startsWith("Font_")) {
+    name = fontFamily.replace("Font_", "").replace(/_/g, " ");
+  }
+  try {
+    return decodeURIComponent(name);
+  } catch (e) {
+    return name;
+  }
+};
 const customFontName = ref(store.config.customFontName);
 const customFontSavePopVisible = ref(false);
 
@@ -201,7 +213,7 @@ onMounted(() => {
   //初始化设置项目
   var config = store.config;
   theme.value = config.theme;
-  if (theme.value >= 6) {
+  if (settings.themes[theme.value]?.isNight) {
     moonIcon.value = "";
   } else {
     moonIcon.value = "";
@@ -224,24 +236,29 @@ const selectedFont = computed(() => {
   return store.config.font;
 });
 
-const setTheme = (theme) => {
-  if (theme == 6) {
-    isNight.value = true;
-    moonIcon.value = "";
-    fontColor.value = config.value.fontColor = "#666";
-    moonIconStyle.value.color = "#ed4259";
-  } else if (theme == 7) {
-    isNight.value = true;
-    moonIcon.value = "";
-    fontColor.value = config.value.fontColor = "#f8f8f2";
-    moonIconStyle.value.color = "#ff79c6";
+const setTheme = (themeIndex) => {
+  const selectedTheme = settings.themes[themeIndex];
+  if (!selectedTheme) return;
+
+  isNight.value = selectedTheme.isNight;
+  moonIcon.value = selectedTheme.isNight ? "" : "";
+  
+  if (selectedTheme.isNight) {
+    moonIconStyle.value.color = themeIndex === 7 ? "#ff79c6" : (themeIndex === 6 ? "#ed4259" : "#f6f6f4");
   } else {
-    isNight.value = false;
-    moonIcon.value = "";
-    fontColor.value = config.value.fontColor = "#262626";
     moonIconStyle.value.color = "rgba(255,255,255,0.2)";
   }
-  config.value.theme = theme;
+  
+  fontColor.value = config.value.fontColor = selectedTheme.defaultFontColor || (selectedTheme.isNight ? "#f8f8f2" : "#262626");
+  
+  if (selectedTheme.fontFamily) {
+    const fontIndex = settings.fonts.indexOf(selectedTheme.fontFamily);
+    if (fontIndex !== -1) {
+      config.value.font = fontIndex;
+    }
+  }
+
+  config.value.theme = themeIndex;
   saveConfig(config.value);
 };
 const setFont = (font) => {
@@ -257,13 +274,8 @@ const setCustomFont = () => {
 const fontColor = ref(config.value.fontColor);
 const saveFontColor = (color) => {
   if (!color) {
-    if (config.value.theme == 6) {
-      color = "#666";
-    } else if (config.value.theme == 7) {
-      color = "#f8f8f2";
-    } else {
-      color = "#262626";
-    }
+    const selectedTheme = settings.themes[config.value.theme];
+    color = selectedTheme ? selectedTheme.defaultFontColor : "#262626";
   }
   fontColor.value = config.value.fontColor = color;
   saveConfig(config.value);
@@ -398,27 +410,50 @@ const uploadConfig = (config) => {
         }
 
         .theme-item {
-          line-height: 32px;
-          width: 34px;
+          line-height: 34px;
+          width: 78px;
           height: 34px;
-          margin-right: 16px;
-          margin-top: 5px;
-          border-radius: 100%;
+          margin-right: 12px;
+          margin-top: 10px;
+          border-radius: 4px;
           display: inline-block;
           cursor: pointer;
           text-align: center;
           vertical-align: middle;
+          border: 1px solid rgba(128, 128, 128, 0.2);
+          position: relative;
+          overflow: hidden;
+
+          .theme-name {
+            font-size: 12px;
+            font-weight: 500;
+          }
 
           .iconfont {
             display: none;
+            position: absolute;
+            font-size: 12px;
+          }
+
+          .night-icon {
+            display: block;
+            right: 2px;
+            top: -10px;
+            color: rgba(255, 255, 255, 0.5);
+          }
+
+          .selected-icon {
+            right: 2px;
+            bottom: -10px;
+            color: #ed4259;
           }
         }
 
         .selected {
-          color: #ed4259;
+          border: 1.5px solid #ed4259 !important;
 
-          .iconfont {
-            display: inline;
+          .selected-icon {
+            display: block;
           }
         }
       }

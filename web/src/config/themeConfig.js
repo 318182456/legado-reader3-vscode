@@ -21,42 +21,66 @@ var settings = {
     {
       body: "#ede7da url(" + body_0 + ") repeat",
       content: "#ede7da url(" + content_0 + ") repeat",
-      popup: "#ede7da url(" + popup_0 + ") repeat"
+      popup: "#ede7da url(" + popup_0 + ") repeat",
+      isNight: false,
+      defaultFontColor: "#262626",
+      name: "默认"
     },
     {
       body: "#ede7da url(" + body_1 + ") repeat",
       content: "#ede7da url(" + content_1 + ") repeat",
-      popup: "#ede7da url(" + popup_1 + ") repeat"
+      popup: "#ede7da url(" + popup_1 + ") repeat",
+      isNight: false,
+      defaultFontColor: "#262626",
+      name: "复古"
     },
     {
       body: "#ede7da url(" + body_2 + ") repeat",
       content: "#ede7da url(" + content_2 + ") repeat",
-      popup: "#ede7da url(" + popup_2 + ") repeat"
+      popup: "#ede7da url(" + popup_2 + ") repeat",
+      isNight: false,
+      defaultFontColor: "#262626",
+      name: "护眼"
     },
     {
       body: "#ede7da url(" + body_3 + ") repeat",
       content: "#ede7da url(" + content_3 + ") repeat",
-      popup: "#ede7da url(" + popup_3 + ") repeat"
+      popup: "#ede7da url(" + popup_3 + ") repeat",
+      isNight: false,
+      defaultFontColor: "#262626",
+      name: "浅蓝"
     },
     {
       body: "#ebcece repeat",
       content: "#f5e4e4 repeat",
-      popup: "#faeceb repeat"
+      popup: "#faeceb repeat",
+      isNight: false,
+      defaultFontColor: "#262626",
+      name: "粉嫩"
     },
     {
       body: "#ede7da url(" + body_5 + ") repeat",
       content: "#ede7da url(" + content_5 + ") repeat",
-      popup: "#ede7da url(" + popup_5 + ") repeat"
+      popup: "#ede7da url(" + popup_5 + ") repeat",
+      isNight: false,
+      defaultFontColor: "#262626",
+      name: "灰度"
     },
     {
       body: "#ede7da url(" + body_6 + ") repeat",
       content: "#ede7da url(" + content_6 + ") repeat",
-      popup: "#ede7da url(" + popup_6 + ") repeat"
+      popup: "#ede7da url(" + popup_6 + ") repeat",
+      isNight: true,
+      defaultFontColor: "#666",
+      name: "夜间"
     },
     {
       body: "#282a36 repeat",
       content: "#282a36 repeat",
-      popup: "#44475a repeat"
+      popup: "#21222c repeat",
+      isNight: true,
+      defaultFontColor: "#f8f8f2",
+      name: "Dracula"
     }
   ],
   fonts: [
@@ -67,4 +91,14 @@ var settings = {
     "Kaiti"
   ]
 };
+
+if (typeof window !== "undefined" && window.__LOCAL_THEMES__) {
+  settings.themes.push(...window.__LOCAL_THEMES__);
+  window.__LOCAL_THEMES__.forEach(t => {
+    if (t.fontFamily && !settings.fonts.includes(t.fontFamily)) {
+      settings.fonts.push(t.fontFamily);
+    }
+  });
+}
+
 export default settings;

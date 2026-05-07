@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { getUri } from "./utilities/getUri";
+import { getLocalThemes } from "./utilities/themeLoader";
 
 export class BottomPanelView implements vscode.WebviewViewProvider {
   public static readonly viewId = 'legado-reader3-vscode.bottomView';
@@ -25,7 +26,8 @@ export class BottomPanelView implements vscode.WebviewViewProvider {
         enableScripts: true,
         localResourceRoots: [
           vscode.Uri.joinPath(this._extensionUri, "out"),
-          vscode.Uri.joinPath(this._extensionUri, "web", "dist")
+          vscode.Uri.joinPath(this._extensionUri, "web", "dist"),
+          vscode.Uri.joinPath(this._extensionUri, "public")
         ]
     };
 
@@ -75,6 +77,7 @@ export class BottomPanelView implements vscode.WebviewViewProvider {
       vscode.workspace.getConfiguration().get("legado-reader3-vscode.webServeUrl") || "";
     webServeUrl = webServeUrl.replace(/^\s+|[\/\s]+$/, "");
     const nonce = new Date().getTime();
+    const localThemes = getLocalThemes(this._extensionUri, webview);
 
     return /*html*/ `
       <!DOCTYPE html>
@@ -83,8 +86,12 @@ export class BottomPanelView implements vscode.WebviewViewProvider {
           <meta charset="UTF-8" />
           <link rel="icon" href="${baseUri}/favicon.ico" />
           <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+          <style>
+            ${localThemes.filter(t => t.fontUrl).map(t => `@font-face { font-family: '${t.fontFamily}'; src: url('${t.fontUrl}'); }`).join('\n')}
+          </style>
           <script type="text/javascript">
             localStorage.setItem("legadoWebServeUrl", "${webServeUrl}");
+            window.__LOCAL_THEMES__ = ${JSON.stringify(localThemes)};
           </script>
           <script type="module" crossorigin src="${baseUri}/assets/index.js"></script>
           <link rel="modulepreload" crossorigin href="${baseUri}/assets/vendor.js">

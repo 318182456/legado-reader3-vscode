@@ -311,7 +311,7 @@ const rightBarTheme = computed(() => {
     display: miniInterface.value && !showToolBar.value ? "none" : "block"
   };
 });
-const isNight = computed(() => theme.value >= 6);
+const isNight = computed(() => settings.themes[theme.value]?.isNight || false);
 
 /**
  * pc移动端判断 最大阅读宽度修正

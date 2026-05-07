@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { getUri } from "./utilities/getUri";
+import { getLocalThemes } from "./utilities/themeLoader";
 
 export class WebAppPanel {
   public static currentPanel: WebAppPanel | undefined;
@@ -57,7 +58,8 @@ export class WebAppPanel {
         retainContextWhenHidden: true,
         localResourceRoots: [
           vscode.Uri.joinPath(extensionUri, "out"),
-          vscode.Uri.joinPath(extensionUri, "web", "dist")
+          vscode.Uri.joinPath(extensionUri, "web", "dist"),
+          vscode.Uri.joinPath(extensionUri, "public")
         ]
       }
     );
@@ -119,6 +121,7 @@ export class WebAppPanel {
       vscode.workspace.getConfiguration().get("legado-reader3-vscode.webServeUrl") || "";
     webServeUrl = webServeUrl.replace(/^\s+|[\/\s]+$/, "");
     const nonce = new Date().getTime();
+    const localThemes = getLocalThemes(this._extensionUri, webview);
 
     return /*html*/ `
       <!DOCTYPE html>
@@ -127,8 +130,12 @@ export class WebAppPanel {
           <meta charset="UTF-8" />
           <link rel="icon" href="${baseUri}/favicon.ico" />
           <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+          <style>
+            ${localThemes.filter(t => t.fontUrl).map(t => `@font-face { font-family: '${t.fontFamily}'; src: url('${t.fontUrl}'); }`).join('\n')}
+          </style>
           <script type="text/javascript">
             localStorage.setItem("legadoWebServeUrl", "${webServeUrl}");
+            window.__LOCAL_THEMES__ = ${JSON.stringify(localThemes)};
           </script>
           <script type="module" crossorigin src="${baseUri}/assets/index.js"></script>
           <link rel="modulepreload" crossorigin href="${baseUri}/assets/vendor.js">
