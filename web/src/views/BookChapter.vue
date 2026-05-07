@@ -1,96 +1,103 @@
 <template>
-  <div
-    class="chapter-wrapper"
-    :style="bodyTheme"
-    :class="{ night: isNight, day: !isNight }"
-    @click="showToolBar = !showToolBar"
-  >
-    <div class="chapter-title-float" :style="{ color: fontColor, background: bodyColor }">
-      {{ catalog[chapterIndex]?.title }}{{ chapterProgress }}
-    </div>
-    <div class="tool-bar" :style="leftBarTheme" @click.stop>
-      <div class="tools">
-        <el-popover
-          placement="right"
-          :width="popupWidth"
-          trigger="click"
-          :show-arrow="false"
-          v-model:visible="popCataVisible"
-          popper-class="pop-cata"
-        >
-          <PopCatalog @getContent="getContent" class="popup" />
-          <template #reference>
-            <div class="tool-icon" :class="{ 'no-point': noPoint }">
-              <div class="iconfont">&#58905;</div>
-              <div class="icon-text">目录</div>
-            </div>
-          </template>
-        </el-popover>
-        <el-popover
-          placement="right"
-          :width="popupWidth"
-          trigger="click"
-          :show-arrow="false"
-          v-model:visible="readSettingsVisible"
-          popper-class="pop-setting"
-        >
-          <read-settings class="popup" />
-          <template #reference>
-            <div class="tool-icon" :class="{ 'no-point': noPoint }">
-              <div class="iconfont">&#58971;</div>
-              <div class="icon-text">设置</div>
-            </div>
-          </template>
-        </el-popover>
-        <div class="tool-icon" @click="toShelf">
-          <div class="iconfont">&#58892;</div>
-          <div class="icon-text">书架</div>
-        </div>
-        <div class="tool-icon" :class="{ 'no-point': noPoint }" @click="toTop">
-          <div class="iconfont">&#58914;</div>
-          <div class="icon-text">顶部</div>
-        </div>
-        <div class="tool-icon" :class="{ 'no-point': noPoint }" @click="toBottom">
-          <div class="iconfont">&#58915;</div>
-          <div class="icon-text">底部</div>
-        </div>
+  <div class="page-layout" :style="bodyTheme" :class="{ night: isNight, day: !isNight }">
+    <div class="chapter-header-area" :style="{ background: bodyColor, color: fontColor }" @click="showToolBar = !showToolBar">
+      <div class="chapter-info">
+        {{ catalog[chapterIndex]?.title }}{{ chapterProgress }}
       </div>
     </div>
-    <div class="read-bar" :style="rightBarTheme" @click.stop>
-      <div class="tools">
-        <div class="tool-icon" :class="{ 'no-point': noPoint }" @click="toPreChapter">
-          <div class="iconfont">&#58920;</div>
-          <span v-if="miniInterface">上一章</span>
+    <div
+      class="scroll-container"
+      ref="scrollContainer"
+      @click="showToolBar = !showToolBar"
+    >
+      <div
+        class="chapter-wrapper"
+      >
+        <div class="tool-bar" :style="leftBarTheme" @click.stop>
+          <div class="tools">
+            <el-popover
+              placement="right"
+              :width="popupWidth"
+              trigger="click"
+              :show-arrow="false"
+              v-model:visible="popCataVisible"
+              popper-class="pop-cata"
+            >
+              <PopCatalog @getContent="getContent" class="popup" />
+              <template #reference>
+                <div class="tool-icon" :class="{ 'no-point': noPoint }">
+                  <div class="iconfont">&#58905;</div>
+                  <div class="icon-text">目录</div>
+                </div>
+              </template>
+            </el-popover>
+            <el-popover
+              placement="right"
+              :width="popupWidth"
+              trigger="click"
+              :show-arrow="false"
+              v-model:visible="readSettingsVisible"
+              popper-class="pop-setting"
+            >
+              <read-settings class="popup" />
+              <template #reference>
+                <div class="tool-icon" :class="{ 'no-point': noPoint }">
+                  <div class="iconfont">&#58971;</div>
+                  <div class="icon-text">设置</div>
+                </div>
+              </template>
+            </el-popover>
+            <div class="tool-icon" @click="toShelf">
+              <div class="iconfont">&#58892;</div>
+              <div class="icon-text">书架</div>
+            </div>
+            <div class="tool-icon" :class="{ 'no-point': noPoint }" @click="toTop">
+              <div class="iconfont">&#58914;</div>
+              <div class="icon-text">顶部</div>
+            </div>
+            <div class="tool-icon" :class="{ 'no-point': noPoint }" @click="toBottom">
+              <div class="iconfont">&#58915;</div>
+              <div class="icon-text">底部</div>
+            </div>
+          </div>
         </div>
-        <div class="tool-icon" :class="{ 'no-point': noPoint }" @click="toNextChapter">
-          <span v-if="miniInterface">下一章</span>
-          <div class="iconfont">&#58913;</div>
+        <div class="read-bar" :style="rightBarTheme" @click.stop>
+          <div class="tools">
+            <div class="tool-icon" :class="{ 'no-point': noPoint }" @click="toPreChapter">
+              <div class="iconfont">&#58920;</div>
+              <span v-if="miniInterface">上一章</span>
+            </div>
+            <div class="tool-icon" :class="{ 'no-point': noPoint }" @click="toNextChapter">
+              <span v-if="miniInterface">下一章</span>
+              <div class="iconfont">&#58913;</div>
+            </div>
+            <div class="tool-icon" @click.stop="toggleZenMode">
+              <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">{{ isZenMode ? '▣' : '▢' }}</div>
+              <div class="icon-text">{{ isZenMode ? '还原' : '全屏' }}</div>
+            </div>
+          </div>
         </div>
-        <div class="tool-icon" @click.stop="toggleZenMode">
-          <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">{{ isZenMode ? '▣' : '▢' }}</div>
-          <div class="icon-text">{{ isZenMode ? '还原' : '全屏' }}</div>
+        <div class="chapter-bar"></div>
+        <div class="chapter" ref="content" :style="chapterTheme">
+          <div class="content">
+            <div class="top-bar" ref="top"></div>
+            <div v-for="data in chapterData" :key="data.index" :chapterIndex="data.index" ref="chapter">
+              <chapter-content
+                ref="chapterRef"
+                :chapterIndex="data.index"
+                :contents="data.content"
+                :title="data.title"
+                :spacing="store.config.spacing"
+                :fontSize="fontSize"
+                :fontFamily="fontFamily"
+                @readedLengthChange="onReadedLengthChange"
+                v-if="showContent"
+              />
+            </div>
+            <div class="loading" ref="loading"></div>
+            <div class="bottom-bar" ref="bottom"></div>
+          </div>
         </div>
-      </div>
-    </div>
-    <div class="chapter-bar"></div>
-    <div class="chapter" ref="content" :style="chapterTheme">
-      <div class="content">
-        <div class="top-bar" ref="top"></div>
-        <div v-for="data in chapterData" :key="data.index" :chapterIndex="data.index" ref="chapter">
-          <chapter-content
-            ref="chapterRef"
-            :chapterIndex="data.index"
-            :contents="data.content"
-            :title="data.title"
-            :spacing="store.config.spacing"
-            :fontSize="fontSize"
-            :fontFamily="fontFamily"
-            @readedLengthChange="onReadedLengthChange"
-            v-if="showContent"
-          />
-        </div>
-        <div class="loading" ref="loading"></div>
-        <div class="bottom-bar" ref="bottom"></div>
       </div>
     </div>
   </div>
@@ -104,6 +111,7 @@ import WEB from "@/api/web";
 import { useLoading } from "@/hooks/loading";
 
 const content = ref();
+const scrollContainer = ref();
 // loading spinner
 const { isLoading, loadingWrapper } = useLoading(content, "正在获取信息");
 const store = useBookStore();
@@ -118,16 +126,19 @@ try {
 
 let isRestoringScroll = false;
 let lastUserInteraction = Date.now();
-const recordUserInteraction = () => {
-  lastUserInteraction = Date.now();
-};
-window.addEventListener("wheel", recordUserInteraction, { passive: true });
-window.addEventListener("touchmove", recordUserInteraction, { passive: true });
-window.addEventListener("keydown", recordUserInteraction, { passive: true });
-window.addEventListener("mousedown", recordUserInteraction, { passive: true });
-window.addEventListener("mousemove", (e) => {
-  if (e.buttons > 0) recordUserInteraction();
-}, { passive: true });
+const scrollOptions = { passive: true };
+onMounted(() => {
+  if (scrollContainer.value) {
+    scrollContainer.value.addEventListener("wheel", recordUserInteraction, scrollOptions);
+    scrollContainer.value.addEventListener("touchmove", recordUserInteraction, scrollOptions);
+    scrollContainer.value.addEventListener("keydown", recordUserInteraction, scrollOptions);
+    scrollContainer.value.addEventListener("mousedown", recordUserInteraction, scrollOptions);
+    scrollContainer.value.addEventListener("mousemove", (e) => {
+      if (e.buttons > 0) recordUserInteraction();
+    }, scrollOptions);
+    scrollContainer.value.addEventListener("scroll", onScroll, scrollOptions);
+  }
+});
 
 const getExactScrollKey = () => {
   const bookUrl = sessionStorage.getItem("bookUrl");
@@ -138,7 +149,7 @@ const getExactScrollKey = () => {
 const onScroll = () => {
   if (isRestoringScroll) return;
   
-  const currentScrollY = window.scrollY || document.documentElement.scrollTop;
+  const currentScrollY = scrollContainer.value?.scrollTop || 0;
   const key = getExactScrollKey();
   
   // 忽略并修正 VS Code Webview 隐藏/显示时突然将 scrollTop 重置为 0 的行为
@@ -148,7 +159,7 @@ const onScroll = () => {
       if (exactScroll && Number(exactScroll) > 0) {
         // 检测到非用户操作导致的归零，强制恢复到真实进度
         isRestoringScroll = true;
-        window.scrollTo({ top: Number(exactScroll), behavior: "instant" });
+        scrollContainer.value?.scrollTo({ top: Number(exactScroll), behavior: "instant" });
         setTimeout(() => { isRestoringScroll = false; }, 200);
         return;
       }
@@ -159,7 +170,6 @@ const onScroll = () => {
     localStorage.setItem(key, String(currentScrollY));
   }
 };
-window.addEventListener("scroll", onScroll, { passive: true });
 
 const {
   catalog,
@@ -335,10 +345,10 @@ watch(
 const top = ref();
 const bottom = ref();
 const toTop = () => {
-  jump(top.value);
+  jump(top.value, { container: scrollContainer.value });
 };
 const toBottom = () => {
-  jump(bottom.value);
+  jump(bottom.value, { container: scrollContainer.value });
 };
 
 // 书架路由切换
@@ -413,7 +423,7 @@ const toChapterPos = (pos) => {
   if (exactScroll) {
     isRestoringScroll = true;
     nextTick(() => {
-      window.scrollTo({ top: Number(exactScroll), behavior: "instant" });
+      scrollContainer.value?.scrollTo({ top: Number(exactScroll), behavior: "instant" });
       setTimeout(() => { isRestoringScroll = false; }, 200);
     });
   } else {
@@ -424,7 +434,7 @@ const toChapterPos = (pos) => {
 };
 const onReadedLengthChange = (index, pos) => {
   // 防止 VS Code 重置滚动条导致的进度归零
-  if (pos === 0 && document.documentElement.scrollTop === 0 && Date.now() - lastUserInteraction > 1000) {
+  if (pos === 0 && scrollContainer.value?.scrollTop === 0 && Date.now() - lastUserInteraction > 1000) {
     return;
   }
   saveReadingBookProgressToBrowser(index, pos);
@@ -585,7 +595,7 @@ const reobserveLoading = (force = false) => {
       scrollObserver?.disconnect();
       scrollObserver = new IntersectionObserver(onReachBottom, {
         // 解决vscode下rootMargin无效的问题
-        root: WEB.isVscode() ? document : null,
+        root: scrollContainer.value || null,
         rootMargin: `-100% 0% 120%`
       });
       infiniteLoading.value && scrollObserver.observe(loading.value);
@@ -639,13 +649,13 @@ const handleKeyPress = (event) => {
     case "w":
       event.stopPropagation();
       event.preventDefault();
-      if (document.documentElement.scrollTop === 0) {
+      if (scrollContainer.value?.scrollTop === 0) {
         ElMessage({
           message: "已到达页面顶部",
           type: "warn"
         });
       } else {
-        jump(0 - document.documentElement.clientHeight + 50, { duration: 100 });
+        jump(0 - scrollContainer.value?.clientHeight + 50, { duration: 100, container: scrollContainer.value });
       }
       break;
     case "ArrowDown":
@@ -654,15 +664,15 @@ const handleKeyPress = (event) => {
       event.stopPropagation();
       event.preventDefault();
       if (
-        document.documentElement.clientHeight + document.documentElement.scrollTop ===
-        document.documentElement.scrollHeight
+        scrollContainer.value?.clientHeight + scrollContainer.value?.scrollTop ===
+        scrollContainer.value?.scrollHeight
       ) {
         ElMessage({
           message: "已到达页面底部",
           type: "warn"
         });
       } else {
-        jump(document.documentElement.clientHeight - 50, { duration: 100 });
+        jump(scrollContainer.value?.clientHeight - 50, { duration: 100, container: scrollContainer.value });
       }
       break;
   }
@@ -723,11 +733,6 @@ onUnmounted(() => {
   clearInterval(saveRBPToAppId);
   window.removeEventListener("keyup", handleKeyPress);
   window.removeEventListener("resize", onResize);
-  window.removeEventListener("wheel", recordUserInteraction);
-  window.removeEventListener("touchmove", recordUserInteraction);
-  window.removeEventListener("keydown", recordUserInteraction);
-  window.removeEventListener("mousedown", recordUserInteraction);
-  window.removeEventListener("scroll", onScroll);
   // 兼容Safari < 14
   document.removeEventListener("visibilitychange", onVisibilityChange);
   readSettingsVisible.value = false;
@@ -746,29 +751,50 @@ onUnmounted(() => {
   margin-left: 10px;
 }
 
-.chapter-title-float {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 30px;
-  line-height: 30px;
-  text-align: center;
-  font-size: 12px;
-  z-index: 99;
-  opacity: 0.8;
-  pointer-events: none;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.1);
-  white-space: nowrap;
+.page-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
   overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 10px;
+}
+
+.chapter-header-area {
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  padding: 0 20px;
+  cursor: pointer;
+  user-select: none;
+
+  .chapter-info {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.85;
+  }
+}
+
+.scroll-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  /* 平滑滚动体验在VS Code中可能导致延迟，默认使用instant */
+  scroll-behavior: auto;
 }
 
 .chapter-wrapper {
   padding: 0 4%;
-
-  overflow-x: hidden;
+  min-height: 101%; /* 确保始终可滚动 */
+  position: relative;
 
   :deep(.no-point) {
     pointer-events: none;
@@ -776,7 +802,7 @@ onUnmounted(() => {
 
   .tool-bar {
     position: fixed;
-    top: 0;
+    top: 36px;
     left: 50%;
     z-index: 100;
 
@@ -957,6 +983,17 @@ onUnmounted(() => {
       width: 100vw !important;
       padding: 0 20px;
       box-sizing: border-box;
+    }
+
+    .chapter-title-side {
+      writing-mode: horizontal-tb;
+      top: auto;
+      bottom: 5px;
+      right: 10px;
+      left: auto;
+      transform: none;
+      opacity: 0.7;
+      font-size: 11px;
     }
   }
 }
