@@ -260,10 +260,14 @@ const fetchBookShelfData = () => {
             // 对比本地最近阅读记录和服务器该书的记录
             const localIndex = Number(readingRecent.value.chapterIndex) || 0;
             const localPos = Number(readingRecent.value.chapterPos) || 0;
+            const localTime = Number(readingRecent.value.durChapterTime) || 0;
             const serverIndex = Number(localRecentBookInShelf.durChapterIndex) || 0;
             const serverPos = Number(localRecentBookInShelf.durChapterPos) || 0;
+            const serverTime = Number(localRecentBookInShelf.durChapterTime) || 0;
 
-            if (localIndex > serverIndex || (localIndex === serverIndex && localPos > serverPos)) {
+            if (localIndex > serverIndex || 
+                (localIndex === serverIndex && localPos > serverPos) ||
+                (localTime > serverTime)) {
               // 本地对于这本书的进度比服务器新！
               localRecentBookInShelf.durChapterIndex = localIndex;
               localRecentBookInShelf.durChapterPos = localPos;

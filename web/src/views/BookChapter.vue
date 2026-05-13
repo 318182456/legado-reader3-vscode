@@ -171,6 +171,20 @@ const onScroll = () => {
   }
 };
 
+const cleanupScrollRecords = () => {
+  const bookUrl = sessionStorage.getItem("bookUrl");
+  if (!bookUrl) return;
+  const keysToRemove = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith("exactScroll_") && !key.includes(bookUrl)) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach((key) => localStorage.removeItem(key));
+  console.log(`已清理非当前书籍的滚动记录，共 ${keysToRemove.length} 条`);
+};
+
 const {
   catalog,
   popCataVisible,
@@ -458,11 +472,13 @@ const saveReadingBookProgressToBrowser = (index, pos) => {
   var book = JSON.parse(localStorage.getItem(bookUrl));
   book.index = index;
   book.chapterPos = pos;
+  book.durChapterTime = new Date().getTime();
   localStorage.setItem(bookUrl, JSON.stringify(book));
   //最近阅读
   book = JSON.parse(localStorage.getItem("readingRecent"));
   book.chapterIndex = index;
   book.chapterPos = pos;
+  book.durChapterTime = new Date().getTime();
   localStorage.setItem("readingRecent", JSON.stringify(book));
   //保存vuex
   chapterIndex.value = index;
@@ -695,6 +711,7 @@ onMounted(() => {
     };
     localStorage.setItem(bookUrl, JSON.stringify(book));
   }
+  cleanupScrollRecords();
   onResize();
   window.addEventListener("resize", onResize);
   // window.addEventListener("resize", () => reobserveLoading());
