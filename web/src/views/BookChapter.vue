@@ -126,8 +126,56 @@ try {
 
 let isRestoringScroll = false;
 let lastUserInteraction = Date.now();
+const isIdle = ref(false);
+const IDLE_THRESHOLD = 10 * 60 * 1000; // 10分钟
+let idleTimer = null;
+
+const recordUserInteraction = () => {
+  if (isIdle.value) {
+    isIdle.value = false;
+    checkServerProgress();
+  }
+  lastUserInteraction = Date.now();
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    isIdle.value = true;
+  }, IDLE_THRESHOLD);
+};
+
+const checkServerProgress = () => {
+  const bookUrl = sessionStorage.getItem("bookUrl");
+  if (!bookUrl) return;
+
+  API.getBookShelf().then((res) => {
+    if (res.data.isSuccess) {
+      const serverBook = res.data.data.find((b) => b.bookUrl === bookUrl);
+      if (serverBook) {
+        const localIndex = chapterIndex.value;
+        const localPos = chapterPos.value;
+        const serverIndex = Number(serverBook.durChapterIndex) || 0;
+        const serverPos = Number(serverBook.durChapterPos) || 0;
+
+        if (serverIndex > localIndex || (serverIndex === localIndex && serverPos > localPos)) {
+          ElMessageBox.confirm(
+            `检测到服务器进度较新（第${serverIndex + 1}章），是否同步？`,
+            "同步提醒",
+            {
+              confirmButtonText: "同步",
+              cancelButtonText: "稍后",
+              type: "info",
+            }
+          ).then(() => {
+            getContent(serverIndex, true, serverPos);
+          }).catch(() => {});
+        }
+      }
+    }
+  });
+};
+
 const scrollOptions = { passive: true };
 onMounted(() => {
+  recordUserInteraction(); // 初始化计时器
   if (scrollContainer.value) {
     scrollContainer.value.addEventListener("wheel", recordUserInteraction, scrollOptions);
     scrollContainer.value.addEventListener("touchmove", recordUserInteraction, scrollOptions);
@@ -492,6 +540,7 @@ const saveReadingBookProgressToBrowser = (index, pos) => {
 const lastSaveToAppTime = ref(0);
 const lastBookProgress = ref(null);
 const saveReadingBookProgressToApp = (force = false) => {
+  if (isIdle.value && !force) return;
   let current = new Date().getTime();
   let pastTime = current - lastSaveToAppTime.value;
   if (force || pastTime >= 3000) {
@@ -746,6 +795,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  // 清除计时器
+  clearTimeout(idleTimer);
   // 清除定时保存阅读记录的定时任务
   clearInterval(saveRBPToAppId);
   window.removeEventListener("keyup", handleKeyPress);
