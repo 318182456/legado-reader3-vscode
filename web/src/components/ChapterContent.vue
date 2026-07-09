@@ -15,6 +15,7 @@
     />
     <p v-else :style="{ fontFamily, fontSize }" v-html="para" />
   </div>
+  <div class="chapter-spacer"></div>
 </template>
 
 <script setup>
@@ -27,7 +28,8 @@ const props = defineProps({
   title: { type: String, required: true },
   spacing: { type: Object, required: true },
   fontFamily: { type: String, required: true },
-  fontSize: { type: String, required: true }
+  fontSize: { type: String, required: true },
+  scrollContainer: { type: Object, default: null }
 });
 
 const getImageSrc = (content) => {
@@ -62,7 +64,8 @@ const scrollToReadedLength = (length) => {
   if (paragraphIndex === -1) return;
   nextTick(() => {
     jump(paragraphRef.value[paragraphIndex], {
-      duration: 0
+      duration: 0,
+      container: props.scrollContainer || window
     });
   });
 };
@@ -71,7 +74,13 @@ defineExpose({
 });
 let intersectionObserver = null;
 const emit = defineEmits(["readedLengthChange"]);
-onMounted(() => {
+
+const initObserver = (container) => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect();
+  }
+  if (!container) return;
+  const rootHeight = container.clientHeight;
   intersectionObserver = new IntersectionObserver(
     (entries) => {
       for (let { target, isIntersecting } of entries) {
@@ -81,13 +90,29 @@ onMounted(() => {
       }
     },
     {
-      rootMargin: `0px 0px -${window.innerHeight - 24}px 0px`
+      root: container,
+      rootMargin: `0px 0px -${rootHeight - 24}px 0px`
     }
   );
-  intersectionObserver.observe(titleRef.value);
-  paragraphRef.value.forEach((element) => {
-    intersectionObserver.observe(element);
-  });
+  if (titleRef.value) intersectionObserver.observe(titleRef.value);
+  if (paragraphRef.value) {
+    paragraphRef.value.forEach((element) => {
+      intersectionObserver.observe(element);
+    });
+  }
+};
+
+watch(() => props.scrollContainer, (newContainer) => {
+  if (newContainer) {
+    initObserver(newContainer);
+  }
+}, { immediate: true });
+
+onMounted(() => {
+  // 如果挂载时已经传过来了，直接初始化
+  if (props.scrollContainer) {
+    initObserver(props.scrollContainer);
+  }
 });
 
 onUnmounted(() => {
@@ -119,6 +144,11 @@ p {
 
 .full {
   display: block;
+  width: 100%;
+}
+
+.chapter-spacer {
+  height: 80px;
   width: 100%;
 }
 </style>

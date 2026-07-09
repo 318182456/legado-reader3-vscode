@@ -12,6 +12,7 @@
     >
       <div
         class="chapter-wrapper"
+        :style="{ paddingTop: topPadding + 'px' }"
       >
         <div class="tool-bar" :style="leftBarTheme" @click.stop>
           <div class="tools">
@@ -81,7 +82,8 @@
         <div class="chapter" ref="content" :style="chapterTheme">
           <div class="content">
             <div class="top-bar" ref="top"></div>
-            <div v-for="data in chapterData" :key="data.index" :chapterIndex="data.index" ref="chapter">
+            <div class="loading-top" ref="loadingTop"></div>
+            <div v-for="data in chapterData" :key="data.index" :chapterIndex="data.index" ref="chapterDivRefs">
               <chapter-content
                 ref="chapterRef"
                 :chapterIndex="data.index"
@@ -90,6 +92,7 @@
                 :spacing="store.config.spacing"
                 :fontSize="fontSize"
                 :fontFamily="fontFamily"
+                :scrollContainer="scrollContainer"
                 @readedLengthChange="onReadedLengthChange"
                 v-if="showContent"
               />
@@ -194,6 +197,22 @@ const getExactScrollKey = () => {
   return `exactScroll_${bookUrl}_${chapterIndex.value}`;
 };
 
+// 计算当前章节在 scrollContainer 内的起始像素偏移
+// 单章模式：topPadding=0 且无前置章，结果为 0
+// 无限加载滑动窗口：topPadding + 窗口内前置章节高度之和
+const getChapterStartOffset = () => {
+  if (!infiniteLoading.value) return 0;
+  const currentArrayIndex = chapterData.value.findIndex(
+    (ch) => ch.index === chapterIndex.value
+  );
+  if (currentArrayIndex <= 0) return topPadding.value;
+  let offset = topPadding.value;
+  for (let i = 0; i < currentArrayIndex; i++) {
+    offset += chapterDivRefs.value[i]?.offsetHeight || 0;
+  }
+  return offset;
+};
+
 const onScroll = () => {
   if (isRestoringScroll) return;
   
@@ -203,11 +222,12 @@ const onScroll = () => {
   // 忽略并修正 VS Code Webview 隐藏/显示时突然将 scrollTop 重置为 0 的行为
   if (currentScrollY === 0 && Date.now() - lastUserInteraction > 1000) {
     if (key) {
-      const exactScroll = localStorage.getItem(key);
-      if (exactScroll && Number(exactScroll) > 0) {
-        // 检测到非用户操作导致的归零，强制恢复到真实进度
+      const saved = localStorage.getItem(key);
+      if (saved && Number(saved) > 0) {
+        // exactScroll 存的是章节相对偏移，还原时需加上章节起始偏移得到绝对值
+        const absoluteScroll = Number(saved) + getChapterStartOffset();
         isRestoringScroll = true;
-        scrollContainer.value?.scrollTo({ top: Number(exactScroll), behavior: "instant" });
+        scrollContainer.value?.scrollTo({ top: absoluteScroll, behavior: "instant" });
         setTimeout(() => { isRestoringScroll = false; }, 200);
         return;
       }
@@ -215,22 +235,42 @@ const onScroll = () => {
   }
   
   if (key) {
-    localStorage.setItem(key, String(currentScrollY));
+    // 保存章节相对偏移（= 绝对 scrollTop - 当前章节起始偏移）
+    // fresh load 时 chapterStart=0，相对值 = 绝对值，可直接用于跨 session 还原
+    const relativeScroll = Math.max(0, currentScrollY - getChapterStartOffset());
+    localStorage.setItem(key, String(relativeScroll));
   }
 };
 
 const cleanupScrollRecords = () => {
   const bookUrl = sessionStorage.getItem("bookUrl");
   if (!bookUrl) return;
-  const keysToRemove = [];
+  const thisBookKeys = [];
+  const otherKeys = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key && key.startsWith("exactScroll_") && !key.includes(bookUrl)) {
-      keysToRemove.push(key);
+    if (!key?.startsWith("exactScroll_")) continue;
+    if (key.includes(bookUrl)) {
+      thisBookKeys.push(key);
+    } else {
+      otherKeys.push(key);
     }
   }
-  keysToRemove.forEach((key) => localStorage.removeItem(key));
-  console.log(`已清理非当前书籍的滚动记录，共 ${keysToRemove.length} 条`);
+  // 删除其他书籍的滚动记录
+  otherKeys.forEach((key) => localStorage.removeItem(key));
+  // 当前书只保留最近 30 章的滚动记录，避免无限积累
+  const MAX_KEEP = 30;
+  if (thisBookKeys.length > MAX_KEEP) {
+    thisBookKeys
+      .sort((a, b) => {
+        const ia = parseInt(a.split("_").pop() || "0");
+        const ib = parseInt(b.split("_").pop() || "0");
+        return ia - ib;
+      })
+      .slice(0, thisBookKeys.length - MAX_KEEP)
+      .forEach((key) => localStorage.removeItem(key));
+  }
+  console.log(`已清理非当前书籍滚动记录 ${otherKeys.length} 条，当前书保留最近 ${Math.min(thisBookKeys.length, MAX_KEEP)} 章记录`);
 };
 
 const {
@@ -250,6 +290,17 @@ const chapterPos = computed({
 const chapterIndex = computed({
   get: () => readingBook.value.index,
   set: (value) => (readingBook.value.index = value)
+});
+
+// 无限加载：chapterIndex 向前推进时删除已读过章节的 exactScroll
+watch(chapterIndex, (newIndex, oldIndex) => {
+  if (!infiniteLoading.value) return;
+  if (newIndex <= oldIndex) return;
+  const bookUrl = sessionStorage.getItem("bookUrl");
+  if (!bookUrl) return;
+  for (let i = oldIndex; i < newIndex; i++) {
+    localStorage.removeItem(`exactScroll_${bookUrl}_${i}`);
+  }
 });
 
 const chapterProgress = computed(() => {
@@ -427,6 +478,7 @@ const popCataTogger = () => {
 // 获取章节内容
 const chapterData = ref([]);
 const noPoint = ref(true);
+const MAX_CHAPTERS_IN_VIEW = 3; // 无限加载模式最多同时渲染章节数
 const getContent = (index, reloadChapter = true, chapterPos = 0) => {
   if (reloadChapter) {
     //展示进度条
@@ -438,6 +490,7 @@ const getContent = (index, reloadChapter = true, chapterPos = 0) => {
     //加载新章节内容时，强制保存阅读进度到APP
     saveReadingBookProgressToApp(true);
     chapterData.value = [];
+    topPadding.value = 0; // 重置顶部占位
   }
   let bookUrl = sessionStorage.getItem("bookUrl");
   let { title, index: chapterIndex } = catalog.value[index];
@@ -449,7 +502,6 @@ const getContent = (index, reloadChapter = true, chapterPos = 0) => {
           let data = res.data.data;
           let content = data.split(/\n+/);
           chapterData.value.push({ index, content, title });
-          if (reloadChapter) toChapterPos(chapterPos);
           let outputText = `========== ${title} ==========\n\n` + content.join('\n\n');
           WEB.printToConsole(outputText);
         } else {
@@ -460,6 +512,11 @@ const getContent = (index, reloadChapter = true, chapterPos = 0) => {
         store.setContentLoading(true);
         noPoint.value = false;
         store.setShowContent(true);
+        // 必须在 setShowContent(true) 之后调用：ChapterContent 受 v-if="showContent" 控制
+        // 此前 chapterRef 为空数组，scrollToReadedLength 无法定位段落
+        if (reloadChapter) {
+          nextTick(() => toChapterPos(chapterPos));
+        }
         if (!res.data.isSuccess) {
           throw res.data;
         }
@@ -478,19 +535,25 @@ const getContent = (index, reloadChapter = true, chapterPos = 0) => {
 // 章节进度跳转和计算
 const chapter = ref();
 const chapterRef = ref();
+const chapterDivRefs = ref([]);
+const topPadding = ref(0);
 const toChapterPos = (pos) => {
+  // 优先用 exactScroll（章节相对偏移）进行像素级精确还原
+  // fresh load 时 topPadding=0、单章，相对偏移 = 绝对 scrollTop，直接 scrollTo 即可
   const exactScrollKey = getExactScrollKey();
-  const exactScroll = exactScrollKey ? localStorage.getItem(exactScrollKey) : null;
-  
-  if (exactScroll) {
+  const savedScroll = exactScrollKey ? localStorage.getItem(exactScrollKey) : null;
+  if (savedScroll && Number(savedScroll) > 0) {
     isRestoringScroll = true;
     nextTick(() => {
-      scrollContainer.value?.scrollTo({ top: Number(exactScroll), behavior: "instant" });
+      scrollContainer.value?.scrollTo({ top: Number(savedScroll), behavior: "instant" });
       setTimeout(() => { isRestoringScroll = false; }, 200);
     });
-  } else {
+    return;
+  }
+  // 无 exactScroll 记录（全新章节）且有字符进度时，降级用段落定位
+  if (pos > 0) {
     nextTick(() => {
-      if (chapterRef.value.length === 1) chapterRef.value[0].scrollToReadedLength(pos);
+      if (chapterRef.value?.length >= 1) chapterRef.value[0].scrollToReadedLength(pos);
     });
   }
 };
@@ -499,6 +562,23 @@ const onReadedLengthChange = (index, pos) => {
   if (pos === 0 && scrollContainer.value?.scrollTop === 0 && Date.now() - lastUserInteraction > 1000) {
     return;
   }
+  
+  if (infiniteLoading.value) {
+    const data = chapterData.value.find((c) => c.index === index);
+    if (data && data.content && data.content.length > 0) {
+      const imgPattern = /<img[^>]*src="[^"]*(?:"[^>]+\})?"[^>]*>/g;
+      const total = data.content.reduce((sum, para) => {
+        return sum + (para ? para.replaceAll(imgPattern, " ").length : 0) + 1;
+      }, 0);
+      if (total > 0 && pos >= total - 1 && index < catalog.value.length - 1) {
+        // 当前章节达到末尾直接算作下一章的开始
+        saveReadingBookProgressToBrowser(index + 1, 0);
+        saveReadingBookProgressToApp();
+        return;
+      }
+    }
+  }
+
   saveReadingBookProgressToBrowser(index, pos);
   saveReadingBookProgressToApp();
 };
@@ -593,6 +673,9 @@ const toNextChapter = () => {
   store.setContentLoading(true);
   let index = chapterIndex.value + 1;
   if (typeof catalog.value[index] !== "undefined") {
+    // 当前章已读完，删除其滚动记录
+    const doneKey = getExactScrollKey();
+    if (doneKey) localStorage.removeItem(doneKey);
     ElMessage({
       message: "下一章",
       type: "info"
@@ -622,9 +705,11 @@ const toPreChapter = () => {
   }
 };
 
-// 无限滚动
+// 无限滚动向下加载
 let scrollObserver;
 const loading = ref();
+const loadingTop = ref();
+let isLoadingPrev = false;
 watchEffect(() => {
   if (!infiniteLoading.value) {
     scrollObserver?.disconnect();
@@ -632,12 +717,88 @@ watchEffect(() => {
     scrollObserver?.observe(loading.value);
   }
 });
+// 无限滚动向上加载——监听顶部哨兵，用户滚入 paddingTop 区域时加载上一章
+let topScrollObserver;
+watchEffect(() => {
+  if (!infiniteLoading.value || !loadingTop.value) {
+    topScrollObserver?.disconnect();
+    return;
+  }
+  topScrollObserver?.disconnect();
+  topScrollObserver = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) loadPrev();
+    },
+    { root: scrollContainer.value, rootMargin: '200px 0px 0px 0px' }
+  );
+  topScrollObserver.observe(loadingTop.value);
+});
+
 const loadMore = () => {
   let index = chapterData.value.slice(-1)[0]?.index;
   if (catalog.value.length - 1 > index) {
+    // 滑动窗口：超出最大章节数时，移除最旧一章并用 paddingTop 补偿其高度
+    if (chapterData.value.length >= MAX_CHAPTERS_IN_VIEW) {
+      const firstDiv = chapterDivRefs.value[0];
+      if (firstDiv) {
+        topPadding.value += firstDiv.offsetHeight;
+      }
+      const removedIndex = chapterData.value[0].index;
+      chapterData.value.shift();
+      // topPadding 变化后窗口内所有章节的绝对 scrollTop 全部失效
+      // 删除被移除章节及剩余章节的记录，让 onScroll 从当前位置重新开始记录
+      const bookUrl = sessionStorage.getItem("bookUrl");
+      if (bookUrl) {
+        localStorage.removeItem(`exactScroll_${bookUrl}_${removedIndex}`);
+        chapterData.value.forEach(ch => {
+          localStorage.removeItem(`exactScroll_${bookUrl}_${ch.index}`);
+        });
+      }
+    }
     getContent(index + 1, false);
   }
 };
+
+// 向上加载：将上一章内容插入到窗口顶部，减少 topPadding 或增加 scrollTop 保持滚动位置稳定
+const loadPrev = () => {
+  if (isLoadingPrev || isLoading.value) return;
+  const firstIndex = chapterData.value[0]?.index;
+  if (firstIndex === undefined || firstIndex <= 0) return;
+  const prevIndex = firstIndex - 1;
+  const bookUrl = sessionStorage.getItem("bookUrl");
+  if (!bookUrl) return;
+  const { title, index: catalogIndex } = catalog.value[prevIndex];
+  isLoadingPrev = true;
+  
+  // 记录加载前原内容滚动高度
+  const oldScrollTop = scrollContainer.value?.scrollTop || 0;
+  
+  API.getBookContent(bookUrl, catalogIndex).then((res) => {
+    if (res.data.isSuccess) {
+      const content = res.data.data.split(/\n+/);
+      chapterData.value.unshift({ index: prevIndex, content, title });
+      nextTick(() => {
+        // 测量新插入章节的高度
+        const newDiv = chapterDivRefs.value[0];
+        const H = newDiv?.offsetHeight || 0;
+        
+        if (topPadding.value > 0) {
+          // 如果有 topPadding 占位，从 topPadding 中扣除
+          topPadding.value = Math.max(0, topPadding.value - H);
+        } else {
+          // 如果没有 topPadding 占位，将新章的高度补偿到 scrollTop，避免画面下跳
+          if (scrollContainer.value) {
+            scrollContainer.value.scrollTop = oldScrollTop + H;
+          }
+        }
+        isLoadingPrev = false;
+      });
+    } else {
+      isLoadingPrev = false;
+    }
+  }).catch(() => { isLoadingPrev = false; });
+};
+
 // IntersectionObserver回调 底部加载
 const onReachBottom = (entries) => {
   if (isLoading.value) return;

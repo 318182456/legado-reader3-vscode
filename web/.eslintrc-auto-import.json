@@ -4,8 +4,6 @@
     "ComponentPublicInstance": true,
     "ComputedRef": true,
     "EffectScope": true,
-    "ElMessage": true,
-    "ElMessageBox": true,
     "InjectionKey": true,
     "PropType": true,
     "Ref": true,
@@ -65,6 +63,7 @@
     "toRaw": true,
     "toRef": true,
     "toRefs": true,
+    "toValue": true,
     "triggerRef": true,
     "unref": true,
     "useAttrs": true,
@@ -80,6 +79,7 @@
     "watchEffect": true,
     "watchPostEffect": true,
     "watchSyncEffect": true,
-    "toValue": true
+    "ElMessage": true,
+    "ElMessageBox": true
   }
 }
